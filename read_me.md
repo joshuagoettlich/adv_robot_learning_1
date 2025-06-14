@@ -1,0 +1,16 @@
+docker compose run --rm adv_robot_learning 
+ docker exec -it adv_robot_learning-adv_robot_learning-run-a79d3f5d0886 bash
+
+
+
+    roslaunch om_position_controller position_control.launch sim:=true
+
+
+
+    roscd om_position_controller/scripts && \
+    python3 4_rs_detect_sim.py 
+
+roscd om_position_controller/scripts && \
+python3 pick_and_place.py
+
+
