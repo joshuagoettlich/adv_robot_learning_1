@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
       # target: ros2_iiwa_gripper # This line is removed as Dockerfile is single-stage
     volumes:
-      - ./ARL_25_noetic_packages:/root/ros2_ws/src:rw
+      - ./ARL_25_noetic_packages:/root/catkin_ws/src:rw
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /etc/localtime:/etc/localtime:ro
     network_mode: "host"
