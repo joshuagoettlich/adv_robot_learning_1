@@ -1,0 +1,104 @@
+import rospy
+from gazebo_msgs.srv import SpawnModel, SpawnModelRequest, SpawnModelResponse
+from geometry_msgs.msg import Pose, Point, Quaternion
+import os
+import rospkg
+import tf # <--- ADD THIS LINE
+
+class CubeSpawner:
+    def __init__(self):
+        # Initialize the ROS node
+        rospy.init_node('cube_spawner', anonymous=True)
+        rospy.loginfo("Cube Spawner Node Initialized.")
+
+        # Get the package path to locate SDF files
+        rospack = rospkg.RosPack()
+        try:
+            self.pkg_path = rospack.get_path('om_position_controller')
+            rospy.loginfo(f"Found 'om_position_controller' package at: {self.pkg_path}")
+        except rospkg.ResourceNotFound:
+            rospy.logerr("Package 'om_position_controller' not found. Please ensure it's in your ROS workspace.")
+            self.pkg_path = None # Set to None to prevent further errors
+
+        # Wait for the /gazebo/spawn_sdf_model service to be available
+        rospy.loginfo("Waiting for /gazebo/spawn_sdf_model service...")
+        rospy.wait_for_service('/gazebo/spawn_sdf_model')
+        self.spawn_model_service = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
+        rospy.loginfo("Service /gazebo/spawn_sdf_model is available.")
+
+    def _read_sdf_file(self, model_name):
+        """Reads the content of an SDF file."""
+        if not self.pkg_path:
+            return None
+        
+        file_path = os.path.join(self.pkg_path, 'models', f'{model_name}.sdf')
+        
+        if not os.path.exists(file_path):
+            rospy.logerr(f"SDF file not found: {file_path}")
+            return None
+            
+        with open(file_path, 'r') as f:
+            sdf_content = f.read()
+        return sdf_content
+
+    def spawn_cube(self, model_name, x, y, z, roll=0, pitch=0, yaw=0):
+        """
+        Spawns a cube model in Gazebo.
+        :param model_name: The name of the cube (e.g., 'red_cube'). This should match the SDF filename.
+        :param x, y, z: Position coordinates.
+        :param roll, pitch, yaw: Orientation in radians (Euler angles).
+        """
+        rospy.loginfo(f"Attempting to spawn {model_name} at [{x}, {y}, {z}]...")
+
+        sdf_xml = self._read_sdf_file(model_name)
+        if not sdf_xml:
+            rospy.logerr(f"Failed to read SDF for {model_name}. Aborting spawn.")
+            return False
+
+        # Create the SpawnModel request
+        req = SpawnModelRequest()
+        req.model_name = model_name
+        req.model_xml = sdf_xml
+        req.robot_namespace = "" # Leave empty for general models
+
+        # Set initial pose
+        pose = Pose()
+        pose.position = Point(x, y, z)
+        
+        # Convert Euler angles to Quaternion
+        q = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+        pose.orientation = Quaternion(x=q[0], y=q[1], z=q[2], w=q[3])
+        req.initial_pose = pose
+        req.reference_frame = "world" # Spawn relative to the world frame
+
+        try:
+            resp = self.spawn_model_service(req)
+            if resp.success:
+                rospy.loginfo(f"Successfully spawned {model_name}.")
+                return True
+            else:
+                rospy.logerr(f"Failed to spawn {model_name}: {resp.status_message}")
+                return False
+        except rospy.ServiceException as e:
+            rospy.logerr(f"Service call failed for {model_name}: {e}")
+            return False
+
+if __name__ == '__main__':
+    spawner = CubeSpawner()
+
+    # Give Gazebo a moment to fully launch and services to register
+    rospy.sleep(2) 
+
+    # Spawn red cube
+    spawner.spawn_cube("red_cube", x=0.2, y=0.0, z=0.05)
+    rospy.sleep(0.5) # Small delay between spawns
+
+    # Spawn green cube
+    spawner.spawn_cube("green_cube", x=0.2, y=-0.1, z=0.05)
+    rospy.sleep(0.5)
+
+    # Spawn blue cube
+    spawner.spawn_cube("blue_cube", x=0.23, y=0.065, z=0.05)
+
+    rospy.loginfo("Finished attempting to spawn all cubes.")
+    rospy.spin() # Keep the node alive if you want to inspect logs

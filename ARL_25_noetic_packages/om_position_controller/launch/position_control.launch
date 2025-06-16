@@ -26,12 +26,6 @@
   <!-- Simulation: startup simulated world and spawn robot -->
   <group if="$(arg sim)">
     <include file="$(find open_manipulator_hw)/launch/open_manipulator_gazebo.launch"/>
-    <!-- Spawn red cube -->
-    <node name="spawn_red_cube" pkg="gazebo_ros" type="spawn_model" args="-sdf -file $(find om_position_controller)/models/red_cube.sdf -model red_cube -x 0.2 -y 0.0 -z 0.05" output="screen" />
-    <!-- Spawn green cube -->
-    <node name="spawn_green_cube" pkg="gazebo_ros" type="spawn_model" args="-sdf -file $(find om_position_controller)/models/green_cube.sdf -model green_cube -x 0.2 -y -0.1 -z 0.05" output="screen" />
-    <!-- Spawn blue cube -->
-    <node name="spawn_blue_cube" pkg="gazebo_ros" type="spawn_model" args="-sdf -file $(find om_position_controller)/models/blue_cube.sdf -model blue_cube -x 0.23 -y 0.065 -z 0.05" output="screen" />
   </group>
 
   <!-- Controller utils (common for both sim and real) -->

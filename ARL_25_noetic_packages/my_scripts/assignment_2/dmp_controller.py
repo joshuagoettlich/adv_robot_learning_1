@@ -379,7 +379,7 @@ class DMPCubeManipulator:
         return T_cartesian, cartesian_trajectory
 
 
-    def _compute_joint_trajectory(self, motion_type, T_cartesian, cartesian_trajectory, subsample_factor=1):
+    def _compute_joint_trajectory(self, motion_type, T_cartesian, cartesian_trajectory, subsample_factor=10):
         # ... (this method remains the same)
         if motion_type not in self.dmp_generators:
             rospy.logerr(f"No DMP loaded for motion type '{motion_type}'. Cannot compute IK.")

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import numpy as np
 import pytransform3d.visualizer as pv
 import pytransform3d.trajectories as ptr
@@ -14,8 +16,9 @@ from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 import tf
 import matplotlib.pyplot as plt
-from gazebo_ros_link_attacher.srv import Attach, AttachRequest
 
+# CORRECTED IMPORT: Only import the service types that exist in your package version.
+from gazebo_ros_link_attacher.srv import Attach, AttachRequest
 
 # --- Helper Functions (moved outside the class for reusability) ---
 
@@ -36,7 +39,7 @@ def save_trajectory_data(joint_trajectory, timestamps, filepath):
 def load_trajectory_data(filepath):
     with open(filepath, 'rb') as f:
         data = pickle.load(f)
-    
+
     joint_trajectory = data['trajectory']
     timestamps = data['timestamps']
     print(f"[LOAD] Loaded trajectory from {filepath} (length={len(joint_trajectory)})")
@@ -47,12 +50,12 @@ def interpolate_joint_trajectory(joint_traj, time_stamps, target_freq=20.0):
     duration = time_stamps[-1] - time_stamps[0]
     num_samples = int(duration * target_freq)
     new_timestamps = np.linspace(time_stamps[0], time_stamps[-1], num_samples)
-    
+
     interp_traj = np.zeros((num_samples, num_joints))
     for i in range(num_joints):
         interpolator = interp1d(time_stamps, joint_traj[:, i], kind='linear', fill_value="extrapolate")
         interp_traj[:, i] = interpolator(new_timestamps)
-    
+
     return interp_traj, new_timestamps
 
 def get_cube_position(cube_name, timeout=5.0):
@@ -60,19 +63,18 @@ def get_cube_position(cube_name, timeout=5.0):
     print(f"Getting {cube_name} position...")
     if not rospy.core.is_initialized():
         rospy.init_node('tf_xyz_fetcher', anonymous=True)
-    
+
     listener = tf.TransformListener()
     try:
         print(f"Waiting for transform /world -> /{cube_name}...")
         listener.waitForTransform('/world', f'/{cube_name}', rospy.Time(0), rospy.Duration(timeout))
-        
+
         trans, _ = listener.lookupTransform('/world', f'/{cube_name}', rospy.Time(0))
         print(f"{cube_name} position: {trans}")
         return trans
     except Exception as e:
         print(f"Error getting transform for {cube_name}: {e}")
         return None
-
 
 # --- Core Classes ---
 
@@ -117,14 +119,13 @@ class GazeboLinkAttacher:
             rospy.logerr(f"Failed to detach: {e}")
 
 
-
 class DMPMotionGenerator:
     def __init__(self, urdf_path, mesh_path=None, joint_names=None, base_link="world", end_effector_link="end_effector_link"):
         print("Initializing DMPMotionGenerator for Gazebo...")
         self.urdf_path = urdf_path
         self.mesh_path = mesh_path
         self.kin = self._load_kinematics(urdf_path, mesh_path)
-        
+
         self.joint_names = joint_names or ["joint1", "joint2", "joint3", "joint4", "joint5", "joint6"]
         self.gripper_joint_names = ["gripper", "gripper_sub"]
         self.base_link = base_link
@@ -133,7 +134,7 @@ class DMPMotionGenerator:
         self.dmp = None
         self.IK_joint_trajectory = None
         self.gripper_trajectory = None
-        
+
         if not rospy.core.is_initialized():
             rospy.init_node('dmp_motion_generator', anonymous=True)
 
@@ -144,14 +145,14 @@ class DMPMotionGenerator:
     def learn_from_rosbag(self, bag_path, joint_topic, dt=None, n_weights=10):
         transforms, joint_trajectory, gripper_trajectory, time_stamp = self._process_rosbag(bag_path, joint_topic)
         self.gripper_trajectory = gripper_trajectory
-        
+
         print(f"Transforms shape: {transforms.shape}")
         Y = ptr.pqs_from_transforms(transforms[10:,:,:])
         if dt is None:
             dt = 1/self.frequency
         self.dmp = CartesianDMP(execution_time=max(time_stamp), dt=dt, n_weights_per_dim=n_weights)
         self.dmp.imitate(time_stamp[10:], Y)
-        
+
         return Y, transforms, joint_trajectory, gripper_trajectory
 
     def _process_rosbag(self, bag_path, joint_topic):
@@ -159,7 +160,7 @@ class DMPMotionGenerator:
         joint_trajectory = []
         gripper_trajectory = []
         time_stamp = []
-        
+
         print(f"Reading bag file: {bag_path}")
         bag = rosbag.Bag(bag_path)
         for topic, msg, t in bag.read_messages(topics=[joint_topic]):
@@ -169,25 +170,25 @@ class DMPMotionGenerator:
             gripper_trajectory.append(gripper_pos)
 
             transforms.append(self.chain.forward(joint_pos))
-            time_stamp.append(msg.header.stamp.to_sec())    
+            time_stamp.append(msg.header.stamp.to_sec())
         bag.close()
-        
+
         transforms = np.array(transforms)
         joint_trajectory = np.array(joint_trajectory)
         gripper_trajectory = np.array(gripper_trajectory)
         time_stamp = np.array(time_stamp)
-        
+
         dt = []
         for i in range(1, time_stamp.shape[0]):
             dt.append(time_stamp[i]- time_stamp[i-1])
         self.frequency = 1/ np.average(np.array(dt))
-        
+
         positions = np.array([T[:3, 3] for T in transforms])
         mask, _ = self.remove_outliers_mad(positions, threshold=5.0)
-        
+
         filtered_time = time_stamp[mask]
         normalized_time = filtered_time - filtered_time[0]
-        
+
         return transforms[mask], joint_trajectory[mask], gripper_trajectory[mask], normalized_time
 
     def remove_outliers_mad(self, data, threshold=3.5):
@@ -202,19 +203,19 @@ class DMPMotionGenerator:
         print(f"Generating trajectory")
         if self.dmp is None:
             raise ValueError("No DMP model available. Learn or load a model first.")
-            
+
         if start_y is not None:
             self.dmp.start_y = start_y
             print(f"Using custom start: {start_y}")
         else:
             print(f"Using default start: {self.dmp.start_y}")
-            
+
         if goal_y is not None:
             self.dmp.goal_y = goal_y
             print(f"Using custom goal: {goal_y}")
         else:
             print(f"Using default goal: {self.dmp.goal_y}")
-        
+
         T, Y = self.dmp.open_loop()
         trajectory = ptr.transforms_from_pqs(Y)
         return T, trajectory
@@ -253,9 +254,9 @@ class DMPMotionGenerator:
                 if 'gripper_trajectory' in loaded_data:
                     self.gripper_trajectory = loaded_data['gripper_trajectory']
                     if self.gripper_trajectory is not None:
-                         rospy.loginfo(f"Gripper trajectory loaded ({len(self.gripper_trajectory)} points).")
+                            rospy.loginfo(f"Gripper trajectory loaded ({len(self.gripper_trajectory)} points).")
                     else:
-                         rospy.loginfo("Loaded None for gripper trajectory.")
+                            rospy.loginfo("Loaded None for gripper trajectory.")
                 else:
                     rospy.logwarn("Loaded dictionary is missing 'gripper_trajectory' key. Setting to None.")
                     self.gripper_trajectory = None
@@ -267,7 +268,7 @@ class DMPMotionGenerator:
             if self.dmp:
                 rospy.loginfo("DMP object loaded successfully.")
             else:
-                 rospy.logerr("Failed to load DMP object.")
+                    rospy.logerr("Failed to load DMP object.")
 
         except FileNotFoundError:
             rospy.logerr(f"DMP file not found: {filepath}")
@@ -277,11 +278,11 @@ class DMPMotionGenerator:
             rospy.logerr(f"Error loading DMP data from {filepath}: {e}")
             self.dmp = None
             self.gripper_trajectory = None
-    
+
     def compute_IK_trajectory(self, trajectory, time_stamp, q0=None, subsample_factor=10):
         if q0 is None:
             q0 = np.array([-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194])
-        
+
         if subsample_factor > 1:
             subsampled_trajectory = trajectory[::subsample_factor]
             subsampled_time_stamp = time_stamp[::subsample_factor]
@@ -292,33 +293,33 @@ class DMPMotionGenerator:
             subsampled_trajectory = trajectory
             subsampled_time_stamp = time_stamp
             subsampled_gripper_trajectory = self.gripper_trajectory
-        
+
         print(f"Solving inverse kinematics for {len(subsampled_trajectory)} points...")
-        
+
         start_time = time.time()
-        
+
         random_state = np.random.RandomState(0)
         joint_trajectory = self.chain.inverse_trajectory(
             subsampled_trajectory, random_state=random_state, orientation_weight=1.0)
-            
+
         print(f"IK solved in {time.time() - start_time:.2f} seconds")
-        
+
         return subsampled_trajectory, joint_trajectory, subsampled_gripper_trajectory, subsampled_time_stamp
 
     def visualize_trajectory(self, trajectory, joint_trajectory, q0=None):
         print(f"Plotting trajectory...")
         fig = pv.figure()
         fig.plot_transform(s=0.3)
-        
+
         graph = fig.plot_graph(
             self.kin.tm, "world", show_visuals=False, show_collision_objects=True,
             show_frames=True, s=0.1, whitelist=[self.base_link, self.end_effector_link])
 
         fig.plot_transform(trajectory[0], s=0.15)
         fig.plot_transform(trajectory[-1], s=0.15)
-        
+
         pv.Trajectory(trajectory, s=0.05).add_artist(fig)
-        
+
         fig.view_init()
         fig.animate(
             animation_callback, len(trajectory), loop=True,
@@ -330,36 +331,36 @@ class GazeboTrajectoryPublisher:
     def __init__(self, joint_names=None, gripper_joint_names=None):
         if not rospy.core.is_initialized():
             rospy.init_node("gazebo_trajectory_publisher", anonymous=True)
-        
+
         self.joint_names = joint_names or ["joint1", "joint2", "joint3", "joint4", "joint5", "joint6"]
         self.gripper_joint_names = gripper_joint_names or ["gripper", "gripper_sub"]
-        
-        self.arm_pub = rospy.Publisher('/open_manipulator_6dof/arm_controller/command', 
-                                     JointTrajectory, queue_size=10)
-        self.gripper_pub = rospy.Publisher('/open_manipulator_6dof/gripper_controller/command', 
+
+        self.arm_pub = rospy.Publisher('/open_manipulator_6dof/arm_controller/command',
                                          JointTrajectory, queue_size=10)
-        
+        self.gripper_pub = rospy.Publisher('/open_manipulator_6dof/gripper_controller/command',
+                                             JointTrajectory, queue_size=10)
+
         print(f"[Gazebo] Initialized publishers:")
         print(f"  - Arm: /open_manipulator_6dof/arm_controller/command")
         print(f"  - Gripper: /open_manipulator_6dof/gripper_controller/command")
-        
+
         rospy.sleep(1.0)
 
     def publish_trajectory(self, joint_trajectory, gripper_trajectory, timestamps, execute_time_factor=1.0):
         if len(joint_trajectory) == 0:
             rospy.logwarn("[Gazebo] Empty trajectory provided")
             return
-        
+
         print(f"[Gazebo] Publishing trajectory with {len(joint_trajectory)} points")
-        
+
         arm_msg = JointTrajectory()
         arm_msg.header.stamp = rospy.Time.now()
         arm_msg.joint_names = self.joint_names
-        
+
         gripper_msg = JointTrajectory()
         gripper_msg.header.stamp = rospy.Time.now()
         gripper_msg.joint_names = self.gripper_joint_names
-        
+
         for i in range(len(joint_trajectory)):
             arm_point = JointTrajectoryPoint()
             arm_point.positions = joint_trajectory[i].tolist()
@@ -369,34 +370,34 @@ class GazeboTrajectoryPublisher:
                 (timestamps[i] - timestamps[0]) * execute_time_factor
             )
             arm_msg.points.append(arm_point)
-            
+
             if gripper_trajectory is not None and i < len(gripper_trajectory):
                 gripper_point = JointTrajectoryPoint()
                 gripper_value = gripper_trajectory[i]
-                gripper_point.positions = [-2.0*gripper_value, -2.0*gripper_value] 
+                gripper_point.positions = [-2.0*gripper_value, -2.0*gripper_value]
                 gripper_point.velocities = [0.0, 0.0]
                 gripper_point.accelerations = [0.0, 0.0]
                 gripper_point.time_from_start = rospy.Duration.from_sec(
                     (timestamps[i] - timestamps[0]) * execute_time_factor
                 )
                 gripper_msg.points.append(gripper_point)
-        
+
         print(f"[Gazebo] Publishing arm trajectory with {len(arm_msg.points)} points")
         self.arm_pub.publish(arm_msg)
-        
+
         if gripper_trajectory is not None and len(gripper_msg.points) > 0:
             print(f"[Gazebo] Publishing gripper trajectory with {len(gripper_msg.points)} points")
             self.gripper_pub.publish(gripper_msg)
         else:
             print(f"[Gazebo] No gripper trajectory to publish")
-        
+
         print(f"[Gazebo] Trajectory published successfully")
 
     def publish_single_trajectory(self, full_trajectory, timestamps, execute_time_factor=1.0):
         if full_trajectory.shape[1] >= 6:
             arm_traj = full_trajectory[:, :6]
             gripper_traj = full_trajectory[:, 6] if full_trajectory.shape[1] > 6 else None
-            
+
             self.publish_trajectory(arm_traj, gripper_traj, timestamps, execute_time_factor)
         else:
             rospy.logwarn(f"[Gazebo] Invalid trajectory shape: {full_trajectory.shape}")
@@ -404,25 +405,25 @@ class GazeboTrajectoryPublisher:
     def publish_home_position(self, home_position=None, execution_time=5.0):
         if home_position is None:
             home_position = [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194]
-        
+
         print(f"[Gazebo] Publishing home position command...")
         print(f"[Gazebo] Home position: {home_position}")
         print(f"[Gazebo] Execution time: {execution_time} seconds")
-        
+
         arm_msg = JointTrajectory()
         arm_msg.header.stamp = rospy.Time.now()
         arm_msg.joint_names = self.joint_names
-        
+
         home_point = JointTrajectoryPoint()
         home_point.positions = home_position
         home_point.velocities = [0.0] * len(self.joint_names)
         home_point.accelerations = [0.0] * len(self.joint_names)
         home_point.time_from_start = rospy.Duration.from_sec(execution_time)
-        
+
         arm_msg.points.append(home_point)
-        
+
         self.arm_pub.publish(arm_msg)
-        print(f"[Gazebo] Home position command published and latched")
+        print(f"[Gazebo] Home position command published")
 
 
 # --- Overall Class for Robot Task Execution ---
@@ -443,7 +444,8 @@ class RobotTaskExecutor:
                  home_position: list = None,
                  joint_names: list = None,
                  base_link: str = "world",
-                 end_effector_link: str = "end_effector_link"):
+                 end_effector_link: str = "end_effector_link",
+                 robot_model_name: str = "open_manipulator_6dof"):
 
         rospy.init_node('robot_task_executor', anonymous=True, disable_signals=True)
         print("Initializing RobotTaskExecutor...")
@@ -455,6 +457,7 @@ class RobotTaskExecutor:
         self.pick_dmp_path = pick_dmp_path
         self.place_dmp_path = place_dmp_path
         self.home_position = home_position if home_position is not None else [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194]
+        self.robot_model_name = robot_model_name
         self.end_effector_link = end_effector_link
 
         self.dmp_generator = DMPMotionGenerator(
@@ -464,13 +467,14 @@ class RobotTaskExecutor:
         self.attacher = GazeboLinkAttacher()
         rospy.sleep(1.0) # Give publishers time to set up
 
-    def _execute_dmp_motion(self, bag_path, dmp_save_path, target_cube_name, 
-                           position_offset, motion_name, execute_time_factor=5, visualize=False, attach=False,detach=False,gripped_cube=None):
+    def _execute_dmp_motion(self, bag_path, dmp_save_path, target_cube_name,
+                            position_offset, motion_name, execute_time_factor=5, visualize=False,
+                            should_attach=False, should_detach=False):
         """
         Internal method to handle the common logic for executing a DMP-based motion.
         """
         print(f"\n=== Executing {motion_name} motion ===")
-        
+
         # Learn from bag
         print(f"Learning {motion_name} motion from bag: {bag_path}")
         try:
@@ -484,7 +488,7 @@ class RobotTaskExecutor:
         # Save DMP
         self.dmp_generator.save_dmp(dmp_save_path)
         print(f"{motion_name.capitalize()} DMP saved to: {dmp_save_path}")
-        
+
         # Get target position
         cube_position = get_cube_position(target_cube_name)
         if cube_position is None:
@@ -492,109 +496,51 @@ class RobotTaskExecutor:
             new_goal_pos = self.dmp_generator.dmp.goal_y[:3] + np.array(position_offset)
         else:
             new_goal_pos = np.array(cube_position) + np.array(position_offset)
-        
+
         # Set start and goal
         new_start = self.dmp_generator.dmp.start_y.copy()
         new_goal = self.dmp_generator.dmp.goal_y.copy()
-        new_goal[:3] = new_goal_pos 
-        new_goal[3:] = [0.0, 0.0, 1.0, 0]  # Reset orientation to identity quaternion
-        
+        new_goal[:3] = new_goal_pos
+        new_goal[3:] = [0.0, 0.0, 1.0, 0] # Reset orientation to identity quaternion
+
         print(f"Original goal: {self.dmp_generator.dmp.goal_y}")
         print(f"New goal position for {motion_name}: {new_goal[:3]}")
-        
+
         # Generate trajectory
         try:
             T, trajectory = self.dmp_generator.generate_trajectory(start_y=new_start, goal_y=new_goal)
         except ValueError as e:
             rospy.logerr(f"Error generating trajectory for {motion_name}: {e}")
             return False
-        
+
         # Compute IK
         trajectory, IK_joint_trajectory, gripper_traj, T = self.dmp_generator.compute_IK_trajectory(
-            trajectory, T, subsample_factor=10)
-        
-        # Apply smoothing
-        window_size = 25
-        if len(IK_joint_trajectory) > window_size:
-            original_start = IK_joint_trajectory[0,:].copy()
-            original_end = IK_joint_trajectory[-1,:].copy()
+            trajectory, T, subsample_factor=1)
 
-            smoothed_IK_joint_trajectory = np.zeros_like(IK_joint_trajectory)
-            for i in range(IK_joint_trajectory.shape[1]):
-                smoothed_IK_joint_trajectory[:, i] = np.convolve(IK_joint_trajectory[:, i], 
-                                                               np.ones(window_size)/window_size, mode='same')
-
-            smoothed_IK_joint_trajectory[0,:] = original_start
-            smoothed_IK_joint_trajectory[-1,:] = original_end
-
-            half_window = window_size // 2
-            for i in range(IK_joint_trajectory.shape[1]):
-                for j in range(min(half_window, len(IK_joint_trajectory) // 2)):
-                    alpha = j / float(half_window)
-                    smoothed_IK_joint_trajectory[j, i] = (1 - alpha) * original_start[i] + alpha * smoothed_IK_joint_trajectory[j, i]
-                for j in range(min(half_window, len(IK_joint_trajectory) // 2)):
-                    alpha = j / float(half_window)
-                    idx_from_end = len(IK_joint_trajectory) - 1 - j
-                    smoothed_IK_joint_trajectory[idx_from_end, i] = (1 - alpha) * original_end[i] + alpha * smoothed_IK_joint_trajectory[idx_from_end, i]
-
-            IK_joint_trajectory = smoothed_IK_joint_trajectory
-            print(f"Applied moving average filter with window size {window_size} to IK trajectory.")
-        else:
-            print(f"Trajectory too short for smoothing (length {len(IK_joint_trajectory)})")
-
-        # Visualize if requested
+        # (Optional) Visualize if requested
         if visualize:
             self.dmp_generator.visualize_trajectory(trajectory, IK_joint_trajectory)
-        
-        # Prepare full trajectory
-        traj_length = min(IK_joint_trajectory.shape[0], len(gripper_traj) if gripper_traj is not None else IK_joint_trajectory.shape[0])
-        IK_joint_trajectory = IK_joint_trajectory[:traj_length, :]
-        
-        if gripper_traj is not None:
-            gripper_traj = gripper_traj[:traj_length]
-            full_trajectory = np.hstack((IK_joint_trajectory, gripper_traj.reshape(-1, 1))) 
-        else:
-            gripper_traj = np.zeros(traj_length)
-            full_trajectory = np.hstack((IK_joint_trajectory, gripper_traj.reshape(-1, 1)))
-        
-        # Interpolate trajectory
-        interpolated_traj, interpolated_time = interpolate_joint_trajectory(
-            full_trajectory, T[:traj_length], target_freq=100.0)
 
-        # Execute trajectory
-        print(f"[{motion_name}] Starting trajectory execution...")
-        
-        # Clip trajectory to 95% of length to avoid oscillations in the learned motions
-        clip_length = int(0.95 * len(interpolated_traj))
-        arm_trajectory = interpolated_traj[:clip_length, :6]
-        gripper_trajectory_values = interpolated_traj[:clip_length, 6] 
-        
-        self.publisher.publish_trajectory(arm_trajectory, gripper_trajectory_values, 
-                                       interpolated_time[:clip_length], execute_time_factor=execute_time_factor)
-        
-        # Wait for completion
-        trajectory_execution_time = max(interpolated_time[:clip_length]) * execute_time_factor
-        print(f"[{motion_name}] Waiting {trajectory_execution_time:.2f} seconds for completion...")
-        rospy.sleep(trajectory_execution_time + 2.0)
-        
-        if attach:
+        # Prepare and publish the trajectory to Gazebo
+        self.publisher.publish_trajectory(IK_joint_trajectory, gripper_traj, T, execute_time_factor)
+
+        # Wait for the robot's motion to complete
+        trajectory_execution_time = (T[-1] - T[0]) * execute_time_factor
+        rospy.loginfo(f"[{motion_name}] Waiting {trajectory_execution_time:.2f} seconds for motion completion...")
+        rospy.sleep(trajectory_execution_time + 2.0) # Add a 2-second buffer
+
+        # Perform attach or detach logic AFTER motion is complete
+        if should_attach:
             self.attacher.attach("robot", "gripper_link", target_cube_name, "link")
-        elif detach and gripped_cube is not None:
-            self.attacher.detach("robot", "gripper_link", gripped_cube, "link")
+        elif should_detach:
+            self.attacher.detach("robot", "gripper_link", target_cube_name, "link")
 
         print(f"[{motion_name}] Motion completed successfully!")
         return True
 
-    def pick(self, target_cube_name, position_offset=[0.0, 0.0, 0.02], 
+    def pick(self, target_cube_name, position_offset=[0.0, 0.0, 0.02],
              execute_time_factor=5, visualize=False):
-        """
-        Executes a pick motion to a specified cube.
-        :param target_cube_name: The TF frame name of the cube to pick.
-        :param position_offset: XYZ offset from the cube's origin for the end-effector.
-        :param execute_time_factor: Factor to scale the execution time of the trajectory.
-        :param visualize: If True, visualizes the generated trajectory.
-        :return: True if the motion was successful, False otherwise.
-        """
+        """Executes a pick motion to a specified cube and attaches it."""
         return self._execute_dmp_motion(
             bag_path=self.pick_bag_path,
             dmp_save_path=self.pick_dmp_path,
@@ -603,20 +549,13 @@ class RobotTaskExecutor:
             motion_name="pick",
             execute_time_factor=execute_time_factor,
             visualize=visualize,
-            attach=True,
-            detach=False
+            should_attach=True,
+            should_detach=False
         )
 
-    def place(self, target_cube_name, position_offset=[0.0, 0.0, 0.07], 
-              execute_time_factor=5, visualize=False,gripped_cube=None):
-        """
-        Executes a place motion to a specified cube.
-        :param target_cube_name: The TF frame name of the cube to place onto.
-        :param position_offset: XYZ offset from the cube's origin for the end-effector.
-        :param execute_time_factor: Factor to scale the execution time of the trajectory.
-        :param visualize: If True, visualizes the generated trajectory.
-        :return: True if the motion was successful, False otherwise.
-        """
+    def place(self, target_cube_name, position_offset=[0.0, 0.0, 0.07],
+              execute_time_factor=5, visualize=False):
+        """Executes a place motion to a specified location and detaches the object."""
         return self._execute_dmp_motion(
             bag_path=self.place_bag_path,
             dmp_save_path=self.place_dmp_path,
@@ -625,71 +564,67 @@ class RobotTaskExecutor:
             motion_name="place",
             execute_time_factor=execute_time_factor,
             visualize=visualize,
-            attach=False,
-            detach=True,
-            gripped_cube=gripped_cube
-
+            should_attach=False,
+            should_detach=True
         )
 
     def go_home(self, execution_time=5.0):
-        """
-        Commands the robot to go to the predefined home position.
-        :param execution_time: The time in seconds for the robot to reach the home position.
-        """
+        """Commands the robot to go to the predefined home position."""
         print("\n=== Returning to Home Position ===")
         self.publisher.publish_home_position(
             home_position=self.home_position,
             execution_time=execution_time
         )
         print(f"[Home] Waiting for home position completion ({execution_time} seconds)...")
-        rospy.sleep(execution_time + 2.0) 
+        rospy.sleep(execution_time + 2.0)
         print("[Home] Home position reached!")
 
 
 # --- Main Execution Block ---
 
 if __name__ == "__main__":
-    
+
     print("=== Starting Pick and Place Operation ===")
-    
+
     try:
-        # Initialize the main task executor with default paths
-        # All configuration paths and home position are now defined in the __init__
-        robot_executor = RobotTaskExecutor( end_effector_link="end_effector_link")
-        
+        # Initialize the main task executor
+        robot_executor = RobotTaskExecutor(
+            robot_model_name="open_manipulator_6dof",
+            end_effector_link="end_effector_link"
+        )
+
         # 1. PICK MOTION - Blue Cube
         success_pick = robot_executor.pick(
             target_cube_name="blue_cube",
-            position_offset=[0.0, 0.0, 0.015],  # Slight offset above cube
+            position_offset=[0.0, 0.0, 0.015],  # No offset, aim for the center
             execute_time_factor=5,
             visualize=False
         )
-        
+
         if not success_pick:
             print("Pick motion failed! Aborting.")
             exit(1)
-        
+
         # 2. RETURN TO HOME
         robot_executor.go_home(execution_time=5.0)
-        
-        # 3. PLACE MOTION - Green Cube
+
+        # 3. PLACE MOTION - On top of Green Cube
         success_place = robot_executor.place(
             target_cube_name="green_cube",
             position_offset=[0.0, 0.0, 0.03],  # Offset above green cube for placing
             execute_time_factor=5,
-            visualize=False,
-            gripped_cube="blue_cube"  # Specify the cube being placed
+            visualize=False
         )
-        
+
         if not success_place:
             print("Place motion failed! Aborting.")
             exit(1)
-        
+
         # 4. FINAL RETURN TO HOME
         robot_executor.go_home(execution_time=5.0)
-        
+
         print("\n=== Pick and Place Operation Completed Successfully! ===")
-        
+
     except rospy.ROSInterruptException:
         print("[Main] ROS interrupted.")
     except Exception as e:
