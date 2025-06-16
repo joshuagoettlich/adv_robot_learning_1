@@ -465,7 +465,7 @@ class RobotTaskExecutor:
         rospy.sleep(1.0) # Give publishers time to set up
 
     def _execute_dmp_motion(self, bag_path, dmp_save_path, target_cube_name, 
-                           position_offset, motion_name, execute_time_factor=5, visualize=False, attach=False,detach=False,gripped_cube=None):
+                           position_offset, motion_name, execute_time_factor=5, visualize=False, attach=False,detach=False,gripped_cube=None, start_pos=False):
         """
         Internal method to handle the common logic for executing a DMP-based motion.
         """
@@ -492,9 +492,14 @@ class RobotTaskExecutor:
             new_goal_pos = self.dmp_generator.dmp.goal_y[:3] + np.array(position_offset)
         else:
             new_goal_pos = np.array(cube_position) + np.array(position_offset)
-        
+        new_start = np.zeros(7)  # Initialize start position with zeros
         # Set start and goal
-        new_start = self.dmp_generator.dmp.start_y.copy()
+        if start_pos:
+            new_start[:3] =  np.array(cube_position)+ np.array([0.0 , 0.0 , 0.02])
+            new_start[3:] = [0.0, 0.0, 1.0, 0]  # Reset orientation to identity quaternion
+
+        else:
+            new_start = self.dmp_generator.dmp.start_y.copy()
         new_goal = self.dmp_generator.dmp.goal_y.copy()
         new_goal[:3] = new_goal_pos 
         new_goal[3:] = [0.0, 0.0, 1.0, 0]  # Reset orientation to identity quaternion
@@ -511,7 +516,7 @@ class RobotTaskExecutor:
         
         # Compute IK
         trajectory, IK_joint_trajectory, gripper_traj, T = self.dmp_generator.compute_IK_trajectory(
-            trajectory, T, subsample_factor=10)
+            trajectory, T, subsample_factor=3)
         
         # Apply smoothing
         window_size = 25
@@ -565,9 +570,22 @@ class RobotTaskExecutor:
         print(f"[{motion_name}] Starting trajectory execution...")
         
         # Clip trajectory to 95% of length to avoid oscillations in the learned motions
-        clip_length = int(0.95 * len(interpolated_traj))
+        clip_length = int(0.9 * len(interpolated_traj))
         arm_trajectory = interpolated_traj[:clip_length, :6]
         gripper_trajectory_values = interpolated_traj[:clip_length, 6] 
+        for i in range(len(gripper_trajectory_values)-1):
+            if attach:
+                gripper_trajectory_values[i] = -0.005
+            if detach:
+                gripper_trajectory_values[i] = 0.0053
+                
+        if attach:
+            gripper_trajectory_values[-1] = 0.0019
+        if detach:
+            gripper_trajectory_values[-1] = -0.005
+        
+        print(trajectory)
+
         
         self.publisher.publish_trajectory(arm_trajectory, gripper_trajectory_values, 
                                        interpolated_time[:clip_length], execute_time_factor=execute_time_factor)
@@ -575,12 +593,14 @@ class RobotTaskExecutor:
         # Wait for completion
         trajectory_execution_time = max(interpolated_time[:clip_length]) * execute_time_factor
         print(f"[{motion_name}] Waiting {trajectory_execution_time:.2f} seconds for completion...")
-        rospy.sleep(trajectory_execution_time + 2.0)
+        rospy.sleep(trajectory_execution_time -0.5)
         
         if attach:
+            rospy.sleep(2.5)  # Wait for Gazebo to process the attach command
             self.attacher.attach("robot", "gripper_link", target_cube_name, "link")
         elif detach and gripped_cube is not None:
             self.attacher.detach("robot", "gripper_link", gripped_cube, "link")
+            rospy.sleep(2.5)  # Wait for Gazebo to process the detach command
 
         print(f"[{motion_name}] Motion completed successfully!")
         return True
@@ -631,6 +651,29 @@ class RobotTaskExecutor:
 
         )
 
+    def go_up(self, target_cube_name, position_offset=[0.0, 0.0, 0.03], 
+             execute_time_factor=5, visualize=False, start_pos=False):
+        """
+        Executes a pick motion to a specified cube.
+        :param target_cube_name: The TF frame name of the cube to pick.
+        :param position_offset: XYZ offset from the cube's origin for the end-effector.
+        :param execute_time_factor: Factor to scale the execution time of the trajectory.
+        :param visualize: If True, visualizes the generated trajectory.
+        :return: True if the motion was successful, False otherwise.
+        """
+        return self._execute_dmp_motion(
+            bag_path=self.pick_bag_path,
+            dmp_save_path=self.pick_dmp_path,
+            target_cube_name=target_cube_name,
+            position_offset=position_offset,
+            motion_name="pick",
+            execute_time_factor=execute_time_factor,
+            visualize=visualize,
+            attach=False,
+            detach=False,
+            start_pos=start_pos
+        )
+
     def go_home(self, execution_time=5.0):
         """
         Commands the robot to go to the predefined home position.
@@ -660,7 +703,7 @@ if __name__ == "__main__":
         # 1. PICK MOTION - Blue Cube
         success_pick = robot_executor.pick(
             target_cube_name="blue_cube",
-            position_offset=[0.0, 0.0, 0.015],  # Slight offset above cube
+            position_offset=[0.0, 0.0, 0.025],  # Slight offset above cube
             execute_time_factor=5,
             visualize=False
         )
@@ -675,10 +718,19 @@ if __name__ == "__main__":
         # 3. PLACE MOTION - Green Cube
         success_place = robot_executor.place(
             target_cube_name="green_cube",
-            position_offset=[0.0, 0.0, 0.03],  # Offset above green cube for placing
+            position_offset=[0.0, 0.0, 0.04],  # Offset above green cube for placing
             execute_time_factor=5,
             visualize=False,
             gripped_cube="blue_cube"  # Specify the cube being placed
+        )
+
+        success_place = robot_executor.go_up(
+            target_cube_name="green_cube",
+            position_offset=[0.0, 0.0, 0.18],  # Offset above green cube for placing
+            execute_time_factor=5,
+            visualize=False,
+            start_pos=True  # Start position is always the same for place
+
         )
         
         if not success_place:

@@ -11,6 +11,6 @@ docker compose run --rm adv_robot_learning
     python3 4_rs_detect_sim.py 
 
 roscd om_position_controller/scripts && \
-python3 pick_and_place.py
+python3 pick_and_place.py 
 
 

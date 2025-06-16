@@ -90,15 +90,15 @@ if __name__ == '__main__':
     rospy.sleep(2) 
 
     # Spawn red cube
-    spawner.spawn_cube("red_cube", x=0.2, y=0.0, z=0.05)
+    spawner.spawn_cube("red_cube", x=0.15, y=0.0, z=0.05)
     rospy.sleep(0.5) # Small delay between spawns
 
     # Spawn green cube
-    spawner.spawn_cube("green_cube", x=0.2, y=-0.1, z=0.05)
+    spawner.spawn_cube("green_cube", x=0.15, y=-0.1, z=0.05)
     rospy.sleep(0.5)
 
     # Spawn blue cube
-    spawner.spawn_cube("blue_cube", x=0.23, y=0.065, z=0.05)
+    spawner.spawn_cube("blue_cube", x=0.15, y=0.065, z=0.05)
 
     rospy.loginfo("Finished attempting to spawn all cubes.")
     rospy.spin() # Keep the node alive if you want to inspect logs
