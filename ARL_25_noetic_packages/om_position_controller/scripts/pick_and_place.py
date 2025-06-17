@@ -596,7 +596,7 @@ class RobotTaskExecutor:
         rospy.sleep(trajectory_execution_time -0.5)
         
         if attach:
-            rospy.sleep(2.5)  # Wait for Gazebo to process the attach command
+            rospy.sleep(5)  # Wait for Gazebo to process the attach command
             self.attacher.attach("robot", "gripper_link", target_cube_name, "link")
         elif detach and gripped_cube is not None:
             self.attacher.detach("robot", "gripper_link", gripped_cube, "link")
@@ -651,28 +651,19 @@ class RobotTaskExecutor:
 
         )
 
-    def go_up(self, target_cube_name, position_offset=[0.0, 0.0, 0.03], 
-             execute_time_factor=5, visualize=False, start_pos=False):
+    def go_up(self, execution_time=5.0,position=None):
         """
-        Executes a pick motion to a specified cube.
-        :param target_cube_name: The TF frame name of the cube to pick.
-        :param position_offset: XYZ offset from the cube's origin for the end-effector.
-        :param execute_time_factor: Factor to scale the execution time of the trajectory.
-        :param visualize: If True, visualizes the generated trajectory.
-        :return: True if the motion was successful, False otherwise.
+        Commands the robot to go to the predefined home position.
+        :param execution_time: The time in seconds for the robot to reach the home position.
         """
-        return self._execute_dmp_motion(
-            bag_path=self.pick_bag_path,
-            dmp_save_path=self.pick_dmp_path,
-            target_cube_name=target_cube_name,
-            position_offset=position_offset,
-            motion_name="pick",
-            execute_time_factor=execute_time_factor,
-            visualize=visualize,
-            attach=False,
-            detach=False,
-            start_pos=start_pos
+        print("\n=== Returning to Home Position ===")
+        self.publisher.publish_home_position(
+            home_position=position,
+            execution_time=execution_time
         )
+        print(f"[Home] Waiting for home position completion ({execution_time} seconds)...")
+        rospy.sleep(execution_time + 2.0) 
+        print("[Home] Home position reached!")
 
     def go_home(self, execution_time=5.0):
         """
@@ -724,14 +715,14 @@ if __name__ == "__main__":
             gripped_cube="blue_cube"  # Specify the cube being placed
         )
 
-        success_place = robot_executor.go_up(
-            target_cube_name="green_cube",
-            position_offset=[0.0, 0.0, 0.18],  # Offset above green cube for placing
-            execute_time_factor=5,
-            visualize=False,
-            start_pos=True  # Start position is always the same for place
 
+    
+        # The position offset for the place motion is now set to:
+        robot_executor.go_up(
+            execution_time=5.0,
+            position=[5.682007015428425e-05, -0.010078318918618656, -0.00011069419661691171, -2.126073062314049e-05, 3.7554421808305705e-05, -3.6676308634131516e-05]
         )
+        
         
         if not success_place:
             print("Place motion failed! Aborting.")
