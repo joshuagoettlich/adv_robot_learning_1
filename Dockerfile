@@ -140,6 +140,13 @@ RUN ./libuvc_installation.sh
 
 RUN apt-get install -y ros-noetic-realsense2-camera
 
+# INSTALL YOLOv8 + Torch + Pandas in a clean way
+RUN pip install ultralytics --no-deps && \
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 || \
+    pip install torch torchvision torchaudio && \
+    pip install pandas --no-deps
+
+
 
 COPY ARL_25_noetic_packages/my_scripts/requirement.txt /tmp/requirement.txt
 

@@ -1,0 +1,12 @@
+path: ./dataset_new.yolov8
+
+train: train/images
+val: valid/images
+
+names:
+  0: orange
+  1: green
+  2: black
+  3: blue
+  4: red
+

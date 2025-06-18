@@ -17,14 +17,14 @@
       <collision name="collision">
         <geometry>
           <box>
-            <size>0.040 0.04 0.02</size>
+            <size>0.050 0.05 0.02</size>
           </box>
         </geometry>
         <surface>
           <friction>
             <ode>
-              <mu>1000.0</mu>
-              <mu2>1000.0</mu2>
+              <mu>100000.0</mu>
+              <mu2>100000.0</mu2>
               <fdir1>0 0 0</fdir1>
               <slip1>0.0</slip1>
               <slip2>0.0</slip2>
@@ -61,7 +61,7 @@
       <visual name="visual">
         <geometry>
           <box>
-            <size>0.040 0.04 0.02</size>
+            <size>0.050 0.05 0.02</size>
           </box>
         </geometry>
         <material>

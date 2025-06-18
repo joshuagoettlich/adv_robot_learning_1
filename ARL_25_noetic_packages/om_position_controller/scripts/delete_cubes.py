@@ -5,8 +5,6 @@ import time
 class CubeDeleter:
     def __init__(self):
         # Initialize the ROS node
-        rospy.init_node('cube_deleter', anonymous=True)
-        rospy.loginfo("Cube Deleter Node Initialized.")
 
         # Wait for the /gazebo/delete_model service to be available
         rospy.loginfo("Waiting for /gazebo/delete_model service...")

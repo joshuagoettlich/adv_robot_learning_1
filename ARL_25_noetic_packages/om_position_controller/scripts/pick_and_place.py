@@ -15,6 +15,8 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 import tf
 import matplotlib.pyplot as plt
 from gazebo_ros_link_attacher.srv import Attach, AttachRequest
+from simpile_ik import *
+from tf.transformations import quaternion_from_euler
 
 
 # --- Helper Functions (moved outside the class for reusability) ---
@@ -299,7 +301,7 @@ class DMPMotionGenerator:
         
         random_state = np.random.RandomState(0)
         joint_trajectory = self.chain.inverse_trajectory(
-            subsampled_trajectory, random_state=random_state, orientation_weight=1.0)
+            subsampled_trajectory ,q0,random_state=random_state, orientation_weight=1.0)
             
         print(f"IK solved in {time.time() - start_time:.2f} seconds")
         
@@ -516,7 +518,7 @@ class RobotTaskExecutor:
         
         # Compute IK
         trajectory, IK_joint_trajectory, gripper_traj, T = self.dmp_generator.compute_IK_trajectory(
-            trajectory, T, subsample_factor=3)
+            trajectory, T, subsample_factor=1)
         
         # Apply smoothing
         window_size = 25
@@ -575,16 +577,16 @@ class RobotTaskExecutor:
         gripper_trajectory_values = interpolated_traj[:clip_length, 6] 
         for i in range(len(gripper_trajectory_values)-1):
             if attach:
-                gripper_trajectory_values[i] = -0.005
+                gripper_trajectory_values[i] = -0.010
             if detach:
-                gripper_trajectory_values[i] = 0.0053
+                gripper_trajectory_values[i] = 0.019
                 
         if attach:
-            gripper_trajectory_values[-1] = 0.0019
+            gripper_trajectory_values[-1] = 0.019
         if detach:
-            gripper_trajectory_values[-1] = -0.005
+            gripper_trajectory_values[-1] = -0.010
         
-        print(trajectory)
+        print(gripper_trajectory_values)
 
         
         self.publisher.publish_trajectory(arm_trajectory, gripper_trajectory_values, 
@@ -595,11 +597,8 @@ class RobotTaskExecutor:
         print(f"[{motion_name}] Waiting {trajectory_execution_time:.2f} seconds for completion...")
         rospy.sleep(trajectory_execution_time -0.5)
         
-        if attach:
-            rospy.sleep(5)  # Wait for Gazebo to process the attach command
-            self.attacher.attach("robot", "gripper_link", target_cube_name, "link")
-        elif detach and gripped_cube is not None:
-            self.attacher.detach("robot", "gripper_link", gripped_cube, "link")
+        if detach and gripped_cube is not None:
+            self.attacher.detach("robot", "link7", gripped_cube, "link")
             rospy.sleep(2.5)  # Wait for Gazebo to process the detach command
 
         print(f"[{motion_name}] Motion completed successfully!")
@@ -665,7 +664,7 @@ class RobotTaskExecutor:
         rospy.sleep(execution_time + 2.0) 
         print("[Home] Home position reached!")
 
-    def go_home(self, execution_time=5.0):
+    def go_home(self, execution_time=5.0,attach=False,cube_name=None):
         """
         Commands the robot to go to the predefined home position.
         :param execution_time: The time in seconds for the robot to reach the home position.
@@ -675,6 +674,9 @@ class RobotTaskExecutor:
             home_position=self.home_position,
             execution_time=execution_time
         )
+        rospy.sleep(0.2)  # Wait for the home position command to be processed
+        if attach:
+            self.attacher.attach("robot", "link7", cube_name, "link")
         print(f"[Home] Waiting for home position completion ({execution_time} seconds)...")
         rospy.sleep(execution_time + 2.0) 
         print("[Home] Home position reached!")
@@ -690,11 +692,30 @@ if __name__ == "__main__":
         # Initialize the main task executor with default paths
         # All configuration paths and home position are now defined in the __init__
         robot_executor = RobotTaskExecutor( end_effector_link="end_effector_link")
+        grap_cube = "blue_cube"
+        place_cube = "green_cube"
+
+        #robot_executor.go_home(execution_time=5.0, attach=False, cube_name=grap_cube)
+
+
+
+        target_pose = geometry_msgs.msg.Pose()
+        target_pose.orientation.w = 0
+        target_pose.orientation.y = 1.0
+        target_pose.position.x = 0.13
+        target_pose.position.y = 0.1
+        target_pose.position.z = 0.07
+        position=get_ik_solution(target_pose)
+
+        robot_executor.go_up(
+            execution_time=5.0,
+            position=position
+        )
         
         # 1. PICK MOTION - Blue Cube
         success_pick = robot_executor.pick(
-            target_cube_name="blue_cube",
-            position_offset=[0.0, 0.0, 0.025],  # Slight offset above cube
+            target_cube_name=grap_cube,
+            position_offset=[0.0, 0.0, 0.01],  # Slight offset above cube
             execute_time_factor=5,
             visualize=False
         )
@@ -704,15 +725,64 @@ if __name__ == "__main__":
             exit(1)
         
         # 2. RETURN TO HOME
-        robot_executor.go_home(execution_time=5.0)
+        robot_executor.go_home(execution_time=5.0, attach=True, cube_name=grap_cube)
         
         # 3. PLACE MOTION - Green Cube
         success_place = robot_executor.place(
-            target_cube_name="green_cube",
-            position_offset=[0.0, 0.0, 0.04],  # Offset above green cube for placing
+            target_cube_name=place_cube,
+            position_offset=[0.0, 0.0, 0.035],  # Offset above green cube for placing
             execute_time_factor=5,
             visualize=False,
-            gripped_cube="blue_cube"  # Specify the cube being placed
+            gripped_cube=grap_cube  # Specify the cube being placed
+        )
+
+
+    
+        # The position offset for the place motion is now set to:
+        robot_executor.go_up(
+            execution_time=5.0,
+            position=[5.682007015428425e-05, -0.010078318918618656, -0.00011069419661691171, -2.126073062314049e-05, 3.7554421808305705e-05, -3.6676308634131516e-05]
+        )
+        
+        
+        if not success_place:
+            print("Place motion failed! Aborting.")
+            exit(1)
+        
+        # 4. FINAL RETURN TO HOME
+        
+        print("\n=== Pick and Place Operation Completed Successfully! ===")
+
+
+        # Initialize the main task executor with default paths
+        # All configuration paths and home position are now defined in the __init__
+        robot_executor = RobotTaskExecutor( end_effector_link="end_effector_link")
+        grap_cube = "red_cube"
+        place_cube = "blue_cube"
+        
+        # 1. PICK MOTION - Blue Cube
+        # 1. PICK MOTION - Blue Cube
+        success_pick = robot_executor.pick(
+            target_cube_name=grap_cube,
+            position_offset=[0.0, 0.0, 0.01],  # Slight offset above cube
+            execute_time_factor=5,
+            visualize=False
+        )
+        
+        if not success_pick:
+            print("Pick motion failed! Aborting.")
+            exit(1)
+        
+        # 2. RETURN TO HOME
+        robot_executor.go_home(execution_time=5.0, attach=True, cube_name=grap_cube)
+        
+        # 3. PLACE MOTION - Green Cube
+        success_place = robot_executor.place(
+            target_cube_name=place_cube,
+            position_offset=[0.0, 0.0, 0.035],  # Offset above green cube for placing
+            execute_time_factor=5,
+            visualize=False,
+            gripped_cube=grap_cube  # Specify the cube being placed
         )
 
 
