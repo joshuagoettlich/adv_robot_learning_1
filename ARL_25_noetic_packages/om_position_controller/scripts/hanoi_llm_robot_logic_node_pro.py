@@ -58,7 +58,7 @@ class HanoiLogicNode:
         rospy.loginfo(f"Peg C: {peg_c}")
         rospy.loginfo("-------------------------")
 
-        current_state = f"Peg A: {peg_a}, Peg B: {peg_b}, Peg C: {peg_c}"
+        current_state = f"Peg A Disks: {peg_a}, Peg B Disks: {peg_b}, Peg C Disks: {peg_c}"
         full_prompt = f"{SYSTEM_PROMPT}\n\nCurrent State:\n{current_state}"
         
         rospy.loginfo("Asking LLM for the next move via direct API call...")

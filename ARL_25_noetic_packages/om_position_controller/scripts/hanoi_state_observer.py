@@ -4,17 +4,19 @@ import rospy
 import tf
 import math
 from pprint import pprint
+import json
+from std_msgs.msg import String # Import the String message type
 
 class HanoiGameState:
     """
     Monitors the state of the Tower of Hanoi game by listening to TF transforms.
-    It determines which cubes are on which pegs and represents them by their
-    size number (1, 2, 3).
+    It determines which cubes are on which pegs, represents them by their
+    size number (1, 2, 3), and publishes the state to a ROS topic.
     """
     def __init__(self):
         """
         Initializes the HanoiGameState node.
-        - Sets up ROS node and a TF listener.
+        - Sets up ROS node, a TF listener, and a state publisher.
         - Defines the names of the game objects (pegs, cubes).
         - Creates a mapping from cube names to their integer sizes.
         """
@@ -22,6 +24,14 @@ class HanoiGameState:
         rospy.loginfo("Hanoi Game State Monitor Node Initialized.")
 
         self.tf_listener = tf.TransformListener()
+
+        # --- Topic where the game state is published ---
+        self.state_publisher = rospy.Publisher(
+            '/hanoi/game_state', # Topic Name
+            String,              # Message Type
+            queue_size=10        # Queue Size
+        )
+        rospy.loginfo("Publishing game state to /hanoi/game_state")
 
         # --- Configuration ---
         self.peg_names = ['peg_A', 'peg_B', 'peg_C']
@@ -88,7 +98,6 @@ class HanoiGameState:
             # Sort cubes from lowest to highest z-coordinate
             sorted_cubes = sorted(cubes_on_peg, key=lambda c: c['z'])
             
-            # *** KEY CHANGE IS HERE ***
             # Instead of using the cube name, look up its size number in our map.
             # Using .get() is safer than direct access; it returns None if a name is not found.
             final_state[peg_name] = [
@@ -98,13 +107,24 @@ class HanoiGameState:
         return final_state
 
     def run(self):
-        """Main loop to continuously check and print the game state."""
-        rate = rospy.Rate(1)  # 1 Hz
+        """
+        Main loop to continuously check, print, and publish the game state.
+        """
+        rate = rospy.Rate(10)  # 1 Hz
         while not rospy.is_shutdown():
             current_state = self.determine_game_state()
+
+            # --- Log to console ---
             rospy.loginfo("--- Current Tower of Hanoi State (by Size) ---")
             pprint(current_state)
+            
+            # --- Publish the state ---
+            # Serialize the dictionary to a JSON string and publish it
+            state_json_str = json.dumps(current_state)
+            self.state_publisher.publish(state_json_str)
+            rospy.loginfo("State published to /hanoi/game_state.")
             rospy.loginfo("----------------------------------------------")
+            
             rate.sleep()
 
 if __name__ == '__main__':

@@ -1,13 +1,12 @@
-#!/usr/bin/env python3
+#!/root/catkin_ws/gemini_env/bin/python3
 
 import rospy
 import json
-import time
 import requests
-import yaml
-import os
 
-# System prompt for the LLM
+# Import the standard String message type.
+from std_msgs.msg import String
+
 SYSTEM_PROMPT = """
 You are a master strategist for a robotic arm that solves the Tower of Hanoi puzzle. Your task is to determine the single next optimal move.
 
@@ -17,7 +16,7 @@ You are a master strategist for a robotic arm that solves the Tower of Hanoi puz
 3.  You can only move the topmost disk from one of the three pegs (A, B, C) to another.
 
 **State Validation:**
-Before determining a move, you MUST first validate that the provided 'Current State' is legal. If any larger disk is on top of a smaller disk, the state is invalid.
+Before determining a move, you MUST first validate that the provided 'Current State' is legal. If any larger disk is on top of a smaller disk, the state is invalid. 
 
 **Reasoning Process:**
 1. First, validate the input 'Current State' as per the 'State Validation' rule.
@@ -30,73 +29,85 @@ Before determining a move, you MUST first validate that the provided 'Current St
 **Output Format:**
 - If the state is **valid**, your response MUST be a JSON object with the source and destination peg. Example: `{"source_peg": "A", "destination_peg": "C"}`
 - If the state is **invalid**, your response MUST be a JSON object with a single "error" key. Example: `{"error": "Invalid state on Peg A: disk 2 cannot be on disk 1."}`
+
+Do not include any other text or explanations.
+
 """
 
-class HanoiLogicNode:
+class GeminiHanoiSolverNode:
     def __init__(self):
-        rospy.init_node('hanoi_llm_robot_logic_node', anonymous=True)
+        """
+        Initializes the ROS node, publishers, and subscribers.
+        """
+        rospy.init_node('gemini_hanoi_solver_node', anonymous=True)
 
-        # --- Load API Key from YAML file ---
-        self.api_key = self.load_api_key_from_yaml()
-        if not self.api_key:
-            rospy.logerr("API KEY NOT FOUND or failed to load. Shutting down.")
+        self.api_key = "REMOVED" # you can put your own API key here.
+        if "YOUR_GOOGLE" in self.api_key:
+            rospy.logerr("API KEY NOT SET in the script. Please edit the file and add your key.")
+            rospy.signal_shutdown("API Key not found.")
             return
-            
-        rospy.loginfo("API Key loaded successfully.")
-        # ------------------------------------
 
-        rospy.Subscriber('/hanoi_game_state', HanoiGameState, self.game_state_callback)
-        
-        # NOTE: Original robot publishers/subscribers would go here.
-        # They are commented out for clarity as they are not needed for the logic test.
-        # self.joint_pubs = { ... }
-        # self.current_joint_states = {}
-        # rospy.Subscriber('/open_manipulator_6dof/joint_states', JointState, self._joint_states_callback)
-        
-        rospy.loginfo("Hanoi LLM Logic Node initialized and subscribing to /hanoi_game_state.")
+        # This variable will store the most recent game state received.
+        self.last_game_state_json = None
 
-    def load_api_key_from_yaml(self):
-        """Loads the API key from a YAML file named api_key.yaml."""
-        try:
-            # Assumes the yaml file is in the same directory as the script
-            script_dir = os.path.dirname(os.path.realpath(__file__))
-            yaml_path = os.path.join(script_dir, 'api_key.yaml')
-            
-            with open(yaml_path, 'r') as file:
-                config = yaml.safe_load(file)
-                if config and 'api_key' in config:
-                    return config['api_key']
-                else:
-                    rospy.logerr(f"API key not found in {yaml_path}")
-                    return None
-        except FileNotFoundError:
-            rospy.logerr(f"API key config file not found at {yaml_path}")
-            return None
-        except yaml.YAMLError as e:
-            rospy.logerr(f"Error parsing YAML file: {e}")
-            return None
-        except Exception as e:
-            rospy.logerr(f"An unexpected error occurred while loading the API key: {e}")
-            return None
+        # Subscriber to continuously update the game state.
+        rospy.Subscriber('/hanoi/game_state', String, self.game_state_callback)
+        
+        # Subscriber that acts as a signal to trigger the LLM query.
+        rospy.Subscriber('/hanoi/ask_llm', String, self.trigger_llm_callback)
+        
+        # Publisher to send the next move command.
+        self.move_publisher = rospy.Publisher('/hanoi/move', String, queue_size=10)
+        
+        rospy.loginfo("Gemini Hanoi Solver Node initialized.")
+        rospy.loginfo("Subscribing to /hanoi/game_state for state updates.")
+        rospy.loginfo("Subscribing to /hanoi/ask_llm to trigger moves.")
+        rospy.loginfo("Publishing moves to /hanoi/move.")
 
     def game_state_callback(self, msg):
-        rospy.loginfo("--- Received Game State ---")
-        peg_a = tuple(msg.peg_a_disks)
-        peg_b = tuple(msg.peg_b_disks)
-        peg_c = tuple(msg.peg_c_disks)
-        rospy.loginfo(f"Peg A: {peg_a}")
-        rospy.loginfo(f"Peg B: {peg_b}")
-        rospy.loginfo(f"Peg C: {peg_c}")
-        rospy.loginfo("-------------------------")
+        """
+        This function is called whenever a new message is published on /hanoi/game_state.
+        It stores the latest state of the game.
+        """
+        rospy.loginfo(f"Received new game state from /hanoi/game_state.")
+        self.last_game_state_json = msg.data
 
-        if not peg_a and not peg_b:
+    def trigger_llm_callback(self, msg):
+        """
+        This function is called when a signal is received on /hanoi/ask_llm.
+        It uses the last known game state to query the LLM and publish a move.
+        The content of the message `msg` is ignored; it's used only as a trigger.
+        """
+        rospy.loginfo("--- Received Signal on /hanoi/ask_llm ---")
+        
+        if self.last_game_state_json is None:
+            rospy.logwarn("LLM triggered, but no game state has been received yet. Ignoring.")
+            return
+
+        try:
+            state_dict = json.loads(self.last_game_state_json)
+        except json.JSONDecodeError:
+            rospy.logerr(f"Failed to decode the last stored JSON state: {self.last_game_state_json}")
+            return
+
+        # Extract the state of each peg.
+        peg_a = list(state_dict.get('A', []))[::-1]
+        peg_b = list(state_dict.get('B', []))[::-1]
+        peg_c = list(state_dict.get('C', []))[::-1]
+        
+        rospy.loginfo(f"Using last known state: Peg A: {peg_a}, Peg B: {peg_b}, Peg C: {peg_c}")
+        rospy.loginfo("-------------------------------------------")
+
+        # Check if the puzzle is solved.
+        if len(peg_c) == 3: # Assuming 3 disks
             rospy.loginfo("Puzzle Solved! No further moves needed.")
             return
 
-        current_state = f"Peg A: {peg_a}, Peg B: {peg_b}, Peg C: {peg_c}"
+        # Format the current state for the LLM prompt.
+        current_state = f"Peg A Disks: {peg_a}\n Peg B Disks: {peg_b}\n Peg C Disks: {peg_c}"
         full_prompt = f"{SYSTEM_PROMPT}\n\nCurrent State:\n{current_state}"
         
-        rospy.loginfo("Asking LLM for the next move via API call...")
+        rospy.loginfo("Querying LLM for the next move...")
         
         api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.api_key}"
         headers = {"Content-Type": "application/json"}
@@ -104,47 +115,41 @@ class HanoiLogicNode:
 
         try:
             response = requests.post(api_url, headers=headers, data=json.dumps(data), timeout=20)
-            response.raise_for_status() 
+            response.raise_for_status()
 
             result_json = response.json()
             llm_text_response = result_json['candidates'][0]['content']['parts'][0]['text']
             
-            # Clean the response to ensure it's valid JSON
             cleaned_response = llm_text_response.strip().replace('```json', '').replace('```', '').strip()
             move_data = json.loads(cleaned_response)
 
             if 'error' in move_data:
                 rospy.logwarn(f"LLM reported an invalid state: {move_data['error']}")
-                return 
+                return
 
-            source = move_data['source_peg']
-            destination = move_data['destination_peg']
-            
-            rospy.loginfo(f"LLM Decided: Move from Peg {source} to Peg {destination}")
-            self.execute_llm_move(source, destination)
+            move_command = {
+                "source_peg": move_data['source_peg'],
+                "destination_peg": move_data['destination_peg']
+            }
+            move_json_string = json.dumps(move_command)
+
+            self.move_publisher.publish(move_json_string)
+            rospy.loginfo(f"Published move to /hanoi/move: {move_json_string}")
 
         except requests.exceptions.RequestException as e:
             rospy.logerr(f"Network error calling API: {e}")
-        except (KeyError, IndexError, TypeError) as e:
+        except (KeyError, IndexError) as e:
             rospy.logerr(f"Failed to parse LLM response. Unexpected format: {e}")
-            rospy.logerr(f"Full response received: {response.text}")
+            rospy.logerr(f"Full response: {response.text}")
         except json.JSONDecodeError as e:
-            rospy.logerr(f"Failed to decode JSON from LLM response: {e}")
-            rospy.logerr(f"Cleaned response text was: {cleaned_response}")
+            rospy.logerr(f"Failed to decode the cleaned LLM JSON response: {e}")
+            rospy.logerr(f"Cleaned response was: '{cleaned_response}'")
         except Exception as e:
             rospy.logerr(f"An unexpected error occurred: {e}")
 
-    def execute_llm_move(self, source_peg, dest_peg):
-        """Placeholder for robot motion control."""
-        rospy.loginfo(f"--- EXECUTING ROBOT ACTION: {source_peg} -> {dest_peg} ---")
-        # In a real scenario, this is where you would call your robot's
-        # motion planning and execution functions.
-        rospy.loginfo("Robot move sequence placeholder complete.")
-
 if __name__ == '__main__':
     try:
-        node = HanoiLogicNode()
-        if node.api_key: # Only spin if initialization was successful
-            rospy.spin()
+        GeminiHanoiSolverNode()
+        rospy.spin()
     except rospy.ROSInterruptException:
         pass

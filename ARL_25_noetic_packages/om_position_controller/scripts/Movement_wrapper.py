@@ -411,7 +411,7 @@ if __name__ == "__main__":
     try:
         cube_frame_name = 'red_cube'
 
-        move_frame='blue_cube'  # The TF frame you want to move to
+        move_frame='green_cube'  # The TF frame you want to move to
         # Define an offset to position the gripper above the cube, not inside it.
         # This moves the gripper 15cm on the Z-axis relative to the cube's origin.
         
