@@ -6,38 +6,76 @@ import requests
 
 # Import the standard String message type.
 from std_msgs.msg import String
+from std_msgs.msg import Char
+
 
 SYSTEM_PROMPT = """
-You are a master strategist for a robotic arm that solves the Tower of Hanoi puzzle. Your task is to determine the single next optimal move.
+You are an AI that solves the 3-disk Tower of Hanoi puzzle. Your goal is to move all disks to Peg C in the order [3, 2, 1].
 
-**Rules of the Game:**
-1.  You can only move one disk at a time.
-2.  A larger disk can never be placed on top of a smaller disk.
-3.  You can only move the topmost disk from one of the three pegs (A, B, C) to another.
+Given the current arrangement of disks on Pegs A, B, and C, tell me the single best next move.
 
-**State Validation:**
-Before determining a move, you MUST first validate that the provided 'Current State' is legal. If any larger disk is on top of a smaller disk, the state is invalid. 
+Rules:
 
-**Reasoning Process:**
-1. First, validate the input 'Current State' as per the 'State Validation' rule.
-2. If valid, identify the top disk on each peg.
-3. Internally list all possible moves (e.g., A->B, A->C, B->A, etc.).
-4. For each possible move, check if it is legal according to the rule 'a larger disk cannot be placed on a smaller disk'.
-5. From the list of legal moves, select the single most optimal move that follows the standard algorithm to solve the puzzle in the minimum number of steps.
-6. Finally, provide ONLY the selected optimal move in the required JSON format.
+    Move only one disk at a time.
+    Only the top disk of a peg can be moved.
+    Never place a larger disk onto a smaller one. (e.g., Disk 3 cannot be on Disk 2).
 
-**Output Format:**
-- If the state is **valid**, your response MUST be a JSON object with the source and destination peg. Example: `{"source_peg": "A", "destination_peg": "C"}`
-- If the state is **invalid**, your response MUST be a JSON object with a single "error" key. Example: `{"error": "Invalid state on Peg A: disk 2 cannot be on disk 1."}`
+Instructions:
 
-Do not include any other text or explanations.
+    First, check if the provided Current State is valid according to the rules.
+    If the state is invalid, respond with: {"error": "Invalid state."}
+    If the state is valid, respond with the single best move in JSON format. Example: {"source_peg": "A", "destination_peg": "C"}
+
+Provide only the JSON response and no other text.
+Examples for Context
+
+Disks are numbered 1 (smallest), 2 (medium), and 3 (largest). The lists represent pegs from bottom to top, so [3, 2, 1] means disk 1 is on top of 2, which is on top of 3.
+5 Valid States
+
+A state is valid if no larger disk is on a smaller disk.
+
+    Peg A: [3, 2, 1], Peg B: [], Peg C: [] (The starting state is valid).
+    Peg A: [3, 2], Peg B: [], Peg C: [1] (Disk 1 was moved to an empty peg).
+    Peg A: [3], Peg B: [2], Peg C: [1] (Each peg is either empty or holds a valid stack).
+    Peg A: [3], Peg B: [2, 1], Peg C: [] (Disk 1 was correctly placed on disk 2).
+    Peg A: [], Peg B: [], Peg C: [3, 2, 1] (The goal state is valid).
+
+5 Invalid States
+
+A state is invalid if any peg has a larger disk on a smaller one.
+
+    Peg A: [3, 1, 2], Peg B: [], Peg C: [] (Invalid: Disk 2 cannot be on Disk 1).
+    Peg A: [1, 3], Peg B: [2], Peg C: [] (Invalid: Disk 3 cannot be on Disk 1).
+    Peg A: [], Peg B: [2, 3, 1], Peg C: [] (Invalid: Disk 3 cannot be on Disk 2).
+    Peg A: [2], Peg B: [1], Peg C: [3] (Invalid: This configuration is impossible to reach legally, but if given as input, it's a valid state. Let's make a better example. Peg A: [3], Peg B: [1, 2], Peg C: [] -> Invalid: Disk 2 cannot be on Disk 1).
+    Peg A: [1], Peg B: [2], Peg C: [3, 2] (Invalid: This is physically impossible with one set of disks. A better example: Peg A: [2, 1], Peg B: [3], Peg C: [] -> Invalid: Disk 1 can be on 2, but let's assume the error is elsewhere: Peg A: [3], Peg B: [], Peg C: [1, 2] -> Invalid: Disk 2 cannot be on Disk 1).
+
+5 Valid Moves
+
+A move is valid if it takes the top disk and places it on an empty peg or a larger disk.
+
+    State: Peg A: [3, 2, 1], Peg B: [], Peg C: [] Move: A -> C (Moves disk 1 to empty Peg C).
+    State: Peg A: [3, 2], Peg B: [], Peg C: [1] Move: A -> B (Moves disk 2 to empty Peg B).
+    State: Peg A: [3], Peg B: [2], Peg C: [1] Move: C -> B (Moves disk 1 onto disk 2).
+    State: Peg A: [], Peg B: [2, 1], Peg C: [3] Move: B -> A (Moves disk 1 to empty Peg A).
+    State: Peg A: [1], Peg B: [2], Peg C: [3] Move: A -> C (Moves disk 1 onto disk 3).
+
+5 Invalid Moves
+
+A move is invalid if it breaks one of the rules.
+
+    State: Peg A: [3, 2], Peg B: [1], Peg C: [] Move: A -> B (Invalid: Cannot place disk 2 on disk 1).
+    State: Peg A: [3, 2, 1], Peg B: [], Peg C: [] Move: A -> C (moving disk 2) (Invalid: Can only move the top disk, which is disk 1).
+    State: Peg A: [3], Peg B: [2], Peg C: [1] Move: A -> B (Invalid: Cannot place disk 3 on disk 2).
+    State: Peg A: [3], Peg B: [1], Peg C: [2] Move: C -> B (Invalid: Cannot place disk 2 on disk 1).
+    State: Peg A: [3, 2, 1], Peg B: [], Peg C: [] Move: B -> A (Invalid: Cannot move a disk from an empty peg).
 
 """
 
 class GeminiHanoiSolverNode:
     def __init__(self):
-        """
-        Initializes the ROS node, publishers, and subscribers.
+        """,
+        Init,ializes the ROS node, publishers, and subscribers.
         """
         rospy.init_node('gemini_hanoi_solver_node', anonymous=True)
 
@@ -58,6 +96,8 @@ class GeminiHanoiSolverNode:
         
         # Publisher to send the next move command.
         self.move_publisher = rospy.Publisher('/hanoi/move', String, queue_size=10)
+
+        self.reset_publisher = rospy.Publisher('/hanoi_reset', Char, queue_size=10)
         
         rospy.loginfo("Gemini Hanoi Solver Node initialized.")
         rospy.loginfo("Subscribing to /hanoi/game_state for state updates.")
@@ -91,9 +131,9 @@ class GeminiHanoiSolverNode:
             return
 
         # Extract the state of each peg.
-        peg_a = list(state_dict.get('A', []))[::-1]
-        peg_b = list(state_dict.get('B', []))[::-1]
-        peg_c = list(state_dict.get('C', []))[::-1]
+        peg_a = list(state_dict.get('A', []))
+        peg_b = list(state_dict.get('B', []))
+        peg_c = list(state_dict.get('C', []))
         
         rospy.loginfo(f"Using last known state: Peg A: {peg_a}, Peg B: {peg_b}, Peg C: {peg_c}")
         rospy.loginfo("-------------------------------------------")
@@ -109,43 +149,54 @@ class GeminiHanoiSolverNode:
         
         rospy.loginfo("Querying LLM for the next move...")
         
-        api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.api_key}"
+        api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={self.api_key}"
         headers = {"Content-Type": "application/json"}
         data = {"contents": [{"parts": [{"text": full_prompt}]}]}
+        while not rospy.is_shutdown():
+            try:
+                response = requests.post(api_url, headers=headers, data=json.dumps(data), timeout=20)
+                response.raise_for_status()
 
-        try:
-            response = requests.post(api_url, headers=headers, data=json.dumps(data), timeout=20)
-            response.raise_for_status()
+                result_json = response.json()
+                llm_text_response = result_json['candidates'][0]['content']['parts'][0]['text']
+                
+                cleaned_response = llm_text_response.strip().replace('```json', '').replace('```', '').strip()
+                move_data = json.loads(cleaned_response)
 
-            result_json = response.json()
-            llm_text_response = result_json['candidates'][0]['content']['parts'][0]['text']
+                if 'error' in move_data:
+                    error_message = move_data['error']
+                    rospy.logwarn(f"LLM reported an invalid state: {error_message}")
+                    rospy.loginfo("Publishing to /hanoi_reset due to invalid state.")
+                    # Publish the error message to the reset topic.
+                    self.reset_publisher.publish(String(data="1"))  # Sending '1' to trigger a reset.
+                    break # Exit the loop after detecting and reporting the error.
+
+
+                move_command = {
+                    "source_peg": move_data['source_peg'],
+                    "destination_peg": move_data['destination_peg']
+                }
+                move_json_string = json.dumps(move_command)
+
+                self.move_publisher.publish(move_json_string)
+                rospy.loginfo(f"Published move to /hanoi/move: {move_json_string}")
+                break
+
+
+
+            except requests.exceptions.RequestException as e:
+                rospy.logerr(f"Network error calling API: {e}")
+                break
+            except (KeyError, IndexError) as e:
+                rospy.logerr(f"Failed to parse LLM response. Unexpected format: {e}")
+                rospy.logerr(f"Full response: {response.text}")
+            except json.JSONDecodeError as e:
+                rospy.logerr(f"Failed to decode the cleaned LLM JSON response: {e}")
+                rospy.logerr(f"Cleaned response was: '{cleaned_response}'")
+            except Exception as e:
+                rospy.logerr(f"An unexpected error occurred: {e}")
+
             
-            cleaned_response = llm_text_response.strip().replace('```json', '').replace('```', '').strip()
-            move_data = json.loads(cleaned_response)
-
-            if 'error' in move_data:
-                rospy.logwarn(f"LLM reported an invalid state: {move_data['error']}")
-                return
-
-            move_command = {
-                "source_peg": move_data['source_peg'],
-                "destination_peg": move_data['destination_peg']
-            }
-            move_json_string = json.dumps(move_command)
-
-            self.move_publisher.publish(move_json_string)
-            rospy.loginfo(f"Published move to /hanoi/move: {move_json_string}")
-
-        except requests.exceptions.RequestException as e:
-            rospy.logerr(f"Network error calling API: {e}")
-        except (KeyError, IndexError) as e:
-            rospy.logerr(f"Failed to parse LLM response. Unexpected format: {e}")
-            rospy.logerr(f"Full response: {response.text}")
-        except json.JSONDecodeError as e:
-            rospy.logerr(f"Failed to decode the cleaned LLM JSON response: {e}")
-            rospy.logerr(f"Cleaned response was: '{cleaned_response}'")
-        except Exception as e:
-            rospy.logerr(f"An unexpected error occurred: {e}")
 
 if __name__ == '__main__':
     try:

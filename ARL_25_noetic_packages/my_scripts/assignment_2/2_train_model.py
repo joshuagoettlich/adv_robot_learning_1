@@ -65,7 +65,13 @@ class YOLOTrainer:
             pretrained=True,
             plots=True,
             save=True,
-            workers=1
+            workers=1,
+            augment=True,        # <--- aktivieren
+            hsv_h=0.05,         # Farbton-Jitter
+            hsv_s=1,           # Sättigung
+            hsv_v=0.7,           # Helligkeit
+            scale=0.5,           # Zoom in/out
+            fliplr=0.5
         )
         
         # Save training results
@@ -97,7 +103,8 @@ class YOLOTrainer:
             project=self.output_dir,
             name="validation",
             exist_ok=True,
-            plots=True
+            plots=True,
+            workers = 0
         )
         
         print("\nValidation metrics:")

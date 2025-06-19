@@ -4,6 +4,8 @@ import rospy
 import json
 from std_msgs.msg import String
 from Movement_wrapper import GazeboController, get_cube_position
+from std_msgs.msg import Char
+
 
 # --- Configuration ---
 # This maps the disk numbers from the game logic (e.g., 1, 2, 3)
