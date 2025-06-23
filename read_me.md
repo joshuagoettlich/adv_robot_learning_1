@@ -20,5 +20,5 @@ Final_Hand in Launch:
     roscd om_position_controller/scripts && \
     python3 game_player.py 
     
-
+Project documentation is added. If anyone interested in the logic/theory behind of it, feel free to check and read!
 
