@@ -175,7 +175,7 @@ class HanoiLogicNode:
 
 if __name__ == '__main__':
     try:
-        GeminiHanoiSolverNode()
+        HanoiLogicNode()
         rospy.spin()
     except rospy.ROSInterruptException:
         pass
