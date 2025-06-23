@@ -9,6 +9,23 @@ from hanoi_llm_robot_logic.msg import HanoiGameState
 from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
 
+import yaml
+
+try:
+    with open('api_key.yaml', 'r') as file:
+        config = yaml.safe_load(file)
+        api_key = config['api_key']
+
+    # Now you can use the api_key in your application
+    print(f"Successfully loaded API key: {api_key}")
+
+except FileNotFoundError:
+    print("Error: 'api_key.yaml' not found. Please create the file.")
+except yaml.YAMLError as e:
+    print(f"Error parsing YAML file: {e}")
+except KeyError:
+    print("Error: 'api_key' not found in the YAML file.")
+
 
 SYSTEM_PROMPT = """
 You are a master strategist for a robotic arm that solves the Tower of Hanoi puzzle. Your task is to determine the single next optimal move.
@@ -40,7 +57,7 @@ class HanoiLogicNode:
     def __init__(self):
         rospy.init_node('hanoi_llm_robot_logic_node', anonymous=True)
 
-        self.api_key = "REMOVED" 
+        self.api_key = api_key  # Load the API key from the YAML file 
         if "YOUR_GOOGLE" in self.api_key:
             rospy.logerr("API KEY NOT SET in the script. Please edit the file and add your key.")
             return

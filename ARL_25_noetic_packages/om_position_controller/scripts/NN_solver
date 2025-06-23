@@ -1,0 +1,188 @@
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.optimizers import Adam
+import json
+
+# --- 1. Data Generation ---
+
+def hanoi_solver(total_disks, n, source, target, auxiliary):
+    """
+    Recursive generator to solve the Tower of Hanoi puzzle.
+    Yields tuples of (current_state, optimal_move).
+    'total_disks' is the total number of disks in the puzzle.
+    'n' is the number of disks to move in the current recursive step.
+    """
+    if n > 0:
+        # Move n-1 disks from source to auxiliary, so they are out of the way
+        yield from hanoi_solver(total_disks, n - 1, source, auxiliary, target)
+
+        # Move the nth disk from source to target
+        # This is the core move at this step of the recursion
+        state = get_current_state(total_disks, source, target, auxiliary)
+        move = (source, target)
+        yield (state, move)
+
+        # Update the state of the pegs after the move
+        disk = pegs[source].pop()
+        pegs[target].append(disk)
+
+        # Move the n-1 disks that we left on auxiliary onto target
+        yield from hanoi_solver(total_disks, n - 1, auxiliary, target, source)
+
+def get_current_state(n_disks, source_peg, target_peg, aux_peg):
+    """
+    Represents the current state of the pegs as a flat list.
+    This will be the input for our neural network.
+    Each disk is represented by its size (1 to n_disks).
+    Each peg's state is padded to n_disks with 0s.
+    """
+    state = []
+    # We use a fixed order of pegs ('A', 'B', 'C') for consistent state representation
+    for peg_name in ['A', 'B', 'C']:
+        peg_state = pegs[peg_name][:] # Make a copy
+        # Pad the list with 0s to have a fixed size input
+        padded_peg = peg_state + [0] * (n_disks - len(peg_state))
+        state.extend(padded_peg)
+    return state
+
+def generate_hanoi_data(n_disks):
+    """
+    Generates a complete dataset of states and optimal moves.
+    """
+    global pegs
+    pegs = {
+        'A': list(range(n_disks, 0, -1)),
+        'B': [],
+        'C': []
+    }
+    
+    # All possible moves in the Tower of Hanoi with 3 pegs
+    # (Source Peg, Destination Peg)
+    possible_moves = [('A', 'B'), ('A', 'C'), ('B', 'A'), ('B', 'C'), ('C', 'A'), ('C', 'B')]
+    move_to_index = {move: i for i, move in enumerate(possible_moves)}
+    
+    states = []
+    labels = []
+
+    # The hanoi_solver yields the state *before* the move.
+    # We pass n_disks twice: once for the total count, once for the current recursion level.
+    for state_before_move, move in hanoi_solver(n_disks, n_disks, 'A', 'C', 'B'):
+        states.append(state_before_move)
+        labels.append(move_to_index[move])
+
+    return np.array(states), np.array(labels), possible_moves
+
+# --- Configuration ---
+N_DISKS = 4 # Number of disks. Keep this small (3 or 4) to start.
+# For N_DISKS = 3, we have 2^3 - 1 = 7 moves.
+# For N_DISKS = 4, we have 2^4 - 1 = 15 moves.
+# The number of states grows exponentially.
+
+print(f"Generating training data for {N_DISKS} disks...")
+X_train, y_train, moves_list = generate_hanoi_data(N_DISKS)
+print(f"Generated {len(X_train)} training samples.")
+
+# One-hot encode the labels
+y_train_one_hot = tf.keras.utils.to_categorical(y_train, num_classes=6)
+
+# --- 2. Neural Network Model ---
+
+print("Building the Neural Network model...")
+
+# The input shape is 3 pegs * N_DISKS positions per peg
+input_shape = (N_DISKS * 3,) 
+output_shape = 6 # 6 possible moves
+
+model = Sequential([
+    Dense(128, activation='relu', input_shape=input_shape, name='input_layer'),
+    Dropout(0.2),
+    Dense(128, activation='relu', name='hidden_layer_1'),
+    Dropout(0.2),
+    Dense(64, activation='relu', name='hidden_layer_2'),
+    Dense(output_shape, activation='softmax', name='output_layer') # Softmax for multi-class classification
+])
+
+# Compile the model
+model.compile(
+    optimizer=Adam(learning_rate=0.001),
+    loss='categorical_crossentropy', # Good for one-hot encoded labels
+    metrics=['accuracy']
+)
+
+model.summary()
+
+# --- 3. Training ---
+
+print("\nTraining the model...")
+history = model.fit(
+    X_train,
+    y_train_one_hot,
+    epochs=1000,
+    batch_size=4096,
+    validation_split=0.2, # Use part of the data for validation
+    verbose=1
+)
+
+# --- 4. Evaluation and Prediction ---
+
+print("\nTraining finished. Evaluating model performance.")
+
+loss, accuracy = model.evaluate(X_train, y_train_one_hot, verbose=0)
+print(f"\nFinal Training Accuracy: {accuracy * 100:.2f}%")
+print(f"Final Training Loss: {loss:.4f}")
+
+# --- Let's test it on the initial state ---
+print("\n--- Testing the model on the initial state ---")
+
+# Recreate the initial state for N_DISKS
+initial_peg_state = {
+    'A': list(range(N_DISKS, 0, -1)),
+    'B': [],
+    'C': []
+}
+initial_state_vector = []
+for peg_name in ['A', 'B', 'C']:
+    peg_state = initial_peg_state[peg_name][:]
+    padded_peg = peg_state + [0] * (N_DISKS - len(peg_state))
+    initial_state_vector.extend(padded_peg)
+
+initial_state_vector = np.array([initial_state_vector]) # Model expects a batch
+
+# Predict the move
+prediction = model.predict(initial_state_vector)
+predicted_move_index = np.argmax(prediction)
+predicted_move = moves_list[predicted_move_index]
+
+print(f"Initial State Vector: {initial_state_vector.flatten()}")
+print(f"Model's Predicted Probabilities: {prediction.flatten()}")
+print(f"The model predicts the best initial move is: Move from {predicted_move[0]} to {predicted_move[1]}")
+print(f"Correct initial move for {N_DISKS} disks is from A to C.")
+
+
+initial_peg_state = {
+    'A': [2,3],
+    'B': [1,3],
+    'C': [3]
+}
+initial_state_vector = []
+for peg_name in ['A', 'B', 'C']:
+    peg_state = initial_peg_state[peg_name][:]
+    padded_peg = peg_state + [0] * (N_DISKS - len(peg_state))
+    initial_state_vector.extend(padded_peg)
+
+initial_state_vector = np.array([initial_state_vector]) # Model expects a batch
+
+# Predict the move
+prediction = model.predict(initial_state_vector)
+predicted_move_index = np.argmax(prediction)
+predicted_move = moves_list[predicted_move_index]
+
+print(f"Initial State Vector: {initial_state_vector.flatten()}")
+print(f"Model's Predicted Probabilities: {prediction.flatten()}")
+print(f"The model predicts the best initial move is: Move from {predicted_move[0]} to {predicted_move[1]}")
+print(f"Correct initial move for {N_DISKS} disks is from A to C.")
+
+# You can save the model for later use
+model.save('tower_of_hanoi_solver.h5')

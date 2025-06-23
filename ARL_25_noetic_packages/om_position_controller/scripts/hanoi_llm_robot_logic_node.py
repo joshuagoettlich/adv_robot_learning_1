@@ -7,79 +7,54 @@ import requests
 # Import the standard String message type.
 from std_msgs.msg import String
 from std_msgs.msg import Char
+import yaml
+
+try:
+    with open('api_key.yaml', 'r') as file:
+        config = yaml.safe_load(file)
+        api_key = config['api_key']
+
+    # Now you can use the api_key in your application
+    print(f"Successfully loaded API key: {api_key}")
+
+except FileNotFoundError:
+    print("Error: 'api_key.yaml' not found. Please create the file.")
+except yaml.YAMLError as e:
+    print(f"Error parsing YAML file: {e}")
+except KeyError:
+    print("Error: 'api_key' not found in the YAML file.")
 
 
 SYSTEM_PROMPT = """
-You are an AI that solves the 3-disk Tower of Hanoi puzzle. Your goal is to move all disks to Peg C in the order [3, 2, 1].
+You are a master strategist for a robotic arm that solves the Tower of Hanoi puzzle. Your task is to determine the single next optimal move.
 
-Given the current arrangement of disks on Pegs A, B, and C, tell me the single best next move.
+**Rules of the Game:**
+1.  You can only move one disk at a time.
+2.  A larger disk can never be placed on top of a smaller disk.
+3.  You can only move the topmost disk from one of the three pegs (A, B, C) to another.
 
-Rules:
+**State Validation:**
+Before determining a move, you MUST first validate that the provided 'Current State' is legal. If any larger disk is on top of a smaller disk, the state is invalid.
 
-    Move only one disk at a time.
-    Only the top disk of a peg can be moved.
-    Never place a larger disk onto a smaller one. (e.g., Disk 3 cannot be on Disk 2).
+**Reasoning Process:**
+1. First, validate the input 'Current State' as per the 'State Validation' rule.
+2. If valid, identify the top disk on each peg.
+3. Internally list all possible moves (e.g., A->B, A->C, B->A, etc.).
+4. For each possible move, check if it is legal according to the rule 'a larger disk cannot be placed on a smaller disk'.
+5. From the list of legal moves, select the single most optimal move that follows the standard algorithm to solve the puzzle in the minimum number of steps.
+6. Finally, provide ONLY the selected optimal move in the required JSON format.
 
-Instructions:
+**Output Format:**
+- If the state is **valid**, your response MUST be a JSON object with the source and destination peg. Example: `{"source_peg": "A", "destination_peg": "C"}`
+- If the state is **invalid**, your response MUST be a JSON object with a single "error" key. Example: `{"error": "Invalid state on Peg A: disk 2 cannot be on disk 1."}`
 
-    First, check if the provided Current State is valid according to the rules.
-    If the state is invalid, respond with: {"error": "Invalid state."}
-    If the state is valid, respond with the single best move in JSON format. Example: {"source_peg": "A", "destination_peg": "C"}
-
-Provide only the JSON response and no other text.
-Examples for Context
-
-Disks are numbered 1 (smallest), 2 (medium), and 3 (largest). The lists represent pegs from bottom to top, so [3, 2, 1] means disk 1 is on top of 2, which is on top of 3.
-5 Valid States
-
-A state is valid if no larger disk is on a smaller disk.
-
-    Peg A: [3, 2, 1], Peg B: [], Peg C: [] (The starting state is valid).
-    Peg A: [3, 2], Peg B: [], Peg C: [1] (Disk 1 was moved to an empty peg).
-    Peg A: [3], Peg B: [2], Peg C: [1] (Each peg is either empty or holds a valid stack).
-    Peg A: [3], Peg B: [2, 1], Peg C: [] (Disk 1 was correctly placed on disk 2).
-    Peg A: [], Peg B: [], Peg C: [3, 2, 1] (The goal state is valid).
-
-5 Invalid States
-
-A state is invalid if any peg has a larger disk on a smaller one.
-
-    Peg A: [3, 1, 2], Peg B: [], Peg C: [] (Invalid: Disk 2 cannot be on Disk 1).
-    Peg A: [1, 3], Peg B: [2], Peg C: [] (Invalid: Disk 3 cannot be on Disk 1).
-    Peg A: [], Peg B: [2, 3, 1], Peg C: [] (Invalid: Disk 3 cannot be on Disk 2).
-    Peg A: [2], Peg B: [1], Peg C: [3] (Invalid: This configuration is impossible to reach legally, but if given as input, it's a valid state. Let's make a better example. Peg A: [3], Peg B: [1, 2], Peg C: [] -> Invalid: Disk 2 cannot be on Disk 1).
-    Peg A: [1], Peg B: [2], Peg C: [3, 2] (Invalid: This is physically impossible with one set of disks. A better example: Peg A: [2, 1], Peg B: [3], Peg C: [] -> Invalid: Disk 1 can be on 2, but let's assume the error is elsewhere: Peg A: [3], Peg B: [], Peg C: [1, 2] -> Invalid: Disk 2 cannot be on Disk 1).
-
-5 Valid Moves
-
-A move is valid if it takes the top disk and places it on an empty peg or a larger disk.
-
-    State: Peg A: [3, 2, 1], Peg B: [], Peg C: [] Move: A -> C (Moves disk 1 to empty Peg C).
-    State: Peg A: [3, 2], Peg B: [], Peg C: [1] Move: A -> B (Moves disk 2 to empty Peg B).
-    State: Peg A: [3], Peg B: [2], Peg C: [1] Move: C -> B (Moves disk 1 onto disk 2).
-    State: Peg A: [], Peg B: [2, 1], Peg C: [3] Move: B -> A (Moves disk 1 to empty Peg A).
-    State: Peg A: [1], Peg B: [2], Peg C: [3] Move: A -> C (Moves disk 1 onto disk 3).
-
-5 Invalid Moves
-
-A move is invalid if it breaks one of the rules.
-
-    State: Peg A: [3, 2], Peg B: [1], Peg C: [] Move: A -> B (Invalid: Cannot place disk 2 on disk 1).
-    State: Peg A: [3, 2, 1], Peg B: [], Peg C: [] Move: A -> C (moving disk 2) (Invalid: Can only move the top disk, which is disk 1).
-    State: Peg A: [3], Peg B: [2], Peg C: [1] Move: A -> B (Invalid: Cannot place disk 3 on disk 2).
-    State: Peg A: [3], Peg B: [1], Peg C: [2] Move: C -> B (Invalid: Cannot place disk 2 on disk 1).
-    State: Peg A: [3, 2, 1], Peg B: [], Peg C: [] Move: B -> A (Invalid: Cannot move a disk from an empty peg).
-
+Do not include any other text or explanations.
 """
 
-class GeminiHanoiSolverNode:
+class HanoiLogicNode:
     def __init__(self):
-        """,
-        Init,ializes the ROS node, publishers, and subscribers.
-        """
-        rospy.init_node('gemini_hanoi_solver_node', anonymous=True)
-
-        self.api_key = "REMOVED" # you can put your own API key here.
+        rospy.init_node('hanoi_llm_robot_logic_node', anonymous=True)
+        self.api_key = api_key  # Load the API key from the YAML file
         if "YOUR_GOOGLE" in self.api_key:
             rospy.logerr("API KEY NOT SET in the script. Please edit the file and add your key.")
             rospy.signal_shutdown("API Key not found.")
