@@ -155,6 +155,7 @@ RUN for requirement in $(cat /tmp/requirement.txt); do \
       pip install --no-cache-dir "$requirement" || echo "Skipping installation of $requirement"; \
     done
 
+RUN pip install empy==3.3.4
 # Source the ROS environment by default
 RUN echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc
 RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc

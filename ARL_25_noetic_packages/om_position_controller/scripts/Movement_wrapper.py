@@ -377,6 +377,7 @@ class GazeboController:
         :param rotation_lock: Boolean, whether to lock the end-effector's rotation.
         """
         rospy.loginfo(f"Attempting to move {Moving_Object} to TF frame '{target_frame}' with offset {offset}.")
+        self.move_gripper(grip=False,release=True, execution_time=execution_time)
         self.grap_object(
             object_name=Moving_Object, 
             execution_time=execution_time

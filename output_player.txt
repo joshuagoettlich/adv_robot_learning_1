@@ -1,0 +1,902 @@
+root@Joshi:~/catkin_ws/src/om_position_controller/scripts# python3 game_player.py 
+[INFO] [1750679660.161813, 0.000000]: Initializing TF listener.
+[INFO] [1750679660.165405, 1106.420000]: Initializing GazeboLinkAttacher
+[INFO] [1750679660.167032, 1106.421000]: Waiting for /link_attacher_node/attach and /link_attacher_node/detach services...
+[INFO] [1750679660.169521, 1106.424000]: Gazebo link attacher services are ready.
+[INFO] [1750679660.170099, 1106.425000]: Gazebo publishers initialized.
+[INFO] [1750679661.170551, 1107.425000]: Hanoi Main Controller is initialized and ready.
+[INFO] [1750679662.170780, 1108.425000]: Moving arm to home position.
+[INFO] [1750679662.171479, 1108.425000]: Moving arm to: [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194] in 5.0s.
+[INFO] [1750679662.172167, 1108.426000]: Arm command published. Waiting for completion...
+[INFO] [1750679667.174584, 1113.426000]: Arm movement finished.
+[INFO] [1750679667.175399, 1113.426000]: Fetching the latest game state from /hanoi/game_state...
+[INFO] [1750679667.237828, 1113.489000]: Received game state: {"A": [], "B": [3, 1], "C": [2]}
+[INFO] [1750679667.238347, 1113.489000]: Asking LLM for the next move...
+[INFO] [1750679667.238875, 1113.490000]: Waiting for a move command from the LLM on /hanoi/move...
+[INFO] [1750679667.341608, 1113.592000]: Received move command: {"source_peg": "C", "destination_peg": "A"}
+[INFO] [1750679667.342292, 1113.593000]: Fetching the latest game state from /hanoi/game_state...
+[INFO] [1750679667.435174, 1113.686000]: Received game state: {"A": [], "B": [3, 1], "C": [2]}
+[INFO] [1750679667.435812, 1113.687000]: Executing move: blue_cube -> peg_A
+[INFO] [1750679667.436537, 1113.687000]: Attempting to move blue_cube to TF frame 'peg_A' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679667.437362, 1113.688000]: Gripper command published. Waiting for completion...
+[INFO] [1750679675.441343, 1121.689000]: Gripper action finished.
+[INFO] [1750679675.442219, 1121.689000]: Grabbing object 'blue_cube'...
+[INFO] [1750679675.442957, 1121.690000]: Attempting to move to TF frame 'blue_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679675.443649, 1121.691000]: Target frame 'blue_cube' found at [0.12997337846406248, 0.10012101690422655, 0.009844865633197492]. Moving to final pose.
+[INFO] [1750679675.444189, 1121.691000]: Moving arm to pose: position: 
+  x: 0.12997337846406248
+  y: 0.10012101690422655
+  z: 0.05984486563319749
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679675.444883, 1121.692000]: Waiting for '/compute_ik' service...
+[INFO] [1750679675.446279, 1121.693000]: Service is available.
+[INFO] [1750679675.446984, 1121.694000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679675.447680, 1121.695000]: Sending IK request...
+[INFO] [1750679675.449751, 1121.697000]: IK Solution Found!
+[INFO] [1750679675.450573, 1121.698000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679675.451062, 1121.698000]: IK Solution (Joint Values): (0.7037239149340888, 0.4723555988204376, 0.7526165779494782, -1.1204750106769677e-07, 1.9166204495537065, 0.7037235702357879, 0.018981063898456656, 0.018981063898456656)
+[INFO] [1750679675.451628, 1121.699000]: Moving arm to: (0.7037239149340888, 0.4723555988204376, 0.7526165779494782, -1.1204750106769677e-07, 1.9166204495537065, 0.7037235702357879) in 8.0s.
+[INFO] [1750679675.452131, 1121.699000]: Arm command published. Waiting for completion...
+[INFO] [1750679683.455999, 1129.700000]: Arm movement finished.
+[INFO] [1750679691.459688, 1137.700000]: Attempting to move to TF frame 'blue_cube' with offset [0.0, 0.0, 0.015].
+[INFO] [1750679691.460790, 1137.701000]: Target frame 'blue_cube' found at [0.12997337846406248, 0.10012101690422655, 0.009844865633197492]. Moving to final pose.
+[INFO] [1750679691.461404, 1137.701000]: Moving arm to pose: position: 
+  x: 0.12997337846406248
+  y: 0.10012101690422655
+  z: 0.02484486563319749
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679691.461996, 1137.702000]: Waiting for '/compute_ik' service...
+[INFO] [1750679691.463170, 1137.703000]: Service is available.
+[INFO] [1750679691.463777, 1137.704000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679691.464317, 1137.704000]: Sending IK request...
+[INFO] [1750679691.467943, 1137.708000]: IK Solution Found!
+[INFO] [1750679691.468588, 1137.708000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679691.469121, 1137.709000]: IK Solution (Joint Values): (0.7037240098135755, 0.41733024897399024, 1.177519494388871, 2.1499185664164075e-09, 1.5467428990599488, 0.7037243695296762, 0.018996209734007983, 0.018996209734007983)
+[INFO] [1750679691.469675, 1137.710000]: Moving arm to: (0.7037240098135755, 0.41733024897399024, 1.177519494388871, 2.1499185664164075e-09, 1.5467428990599488, 0.7037243695296762) in 8.0s.
+[INFO] [1750679691.470237, 1137.710000]: Arm command published. Waiting for completion...
+[INFO] [1750679699.474364, 1145.711000]: Arm movement finished.
+[INFO] [1750679707.477906, 1153.711000]: Gripper command published. Waiting for completion...
+[INFO] [1750679715.481065, 1161.711000]: Gripper action finished.
+[INFO] [1750679715.481846, 1161.711000]: Attempting to move to TF frame 'blue_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679715.482531, 1161.712000]: Target frame 'blue_cube' found at [0.1313315199548802, 0.09173958441417425, 0.010297202889765685]. Moving to final pose.
+[INFO] [1750679715.483119, 1161.713000]: Moving arm to pose: position: 
+  x: 0.1313315199548802
+  y: 0.09173958441417425
+  z: 0.060297202889765686
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679715.483687, 1161.713000]: Waiting for '/compute_ik' service...
+[INFO] [1750679715.485034, 1161.714000]: Service is available.
+[INFO] [1750679715.485620, 1161.715000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679715.486177, 1161.716000]: Sending IK request...
+[INFO] [1750679715.488391, 1161.718000]: IK Solution Found!
+[INFO] [1750679715.489139, 1161.719000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679715.489708, 1161.719000]: IK Solution (Joint Values): (0.6554238457164966, 0.42857535289256043, 0.8158150163837634, -5.620646088130604e-06, 1.8972048440208893, 0.6554155903591884, -0.008887387356449401, -0.008887387356449401)
+[INFO] [1750679715.490350, 1161.720000]: Moving arm to: (0.6554238457164966, 0.42857535289256043, 0.8158150163837634, -5.620646088130604e-06, 1.8972048440208893, 0.6554155903591884) in 8.0s.
+[INFO] [1750679715.490892, 1161.720000]: Arm command published. Waiting for completion...
+[INFO] [1750679715.491532, 1161.721000]: Arm movement finished.
+[INFO] [1750679717.492881, 1163.721000]: Attaching robot:link7 to blue_cube:link
+[INFO] [1750679717.498133, 1163.726000]: Attachment successful.
+[INFO] [1750679725.502167, 1171.728000]: Moving arm to home position.
+[INFO] [1750679725.502907, 1171.728000]: Moving arm to: [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194] in 8.0s.
+[INFO] [1750679725.503562, 1171.729000]: Arm command published. Waiting for completion...
+[INFO] [1750679733.506416, 1179.729000]: Arm movement finished.
+[INFO] [1750679733.507162, 1179.729000]: Moving blue_cube to frame 'peg_A' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679733.507730, 1179.730000]: Releasing object 'peg_A'...
+[INFO] [1750679733.508194, 1179.730000]: Attempting to move to TF frame 'peg_A' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679733.508770, 1179.731000]: Target frame 'peg_A' found at [0.13, -0.1, 0.0]. Moving to final pose.
+[INFO] [1750679733.509248, 1179.731000]: Moving arm to pose: position: 
+  x: 0.13
+  y: -0.1
+  z: 0.05
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679733.509777, 1179.732000]: Waiting for '/compute_ik' service...
+[INFO] [1750679733.510983, 1179.733000]: Service is available.
+[INFO] [1750679733.511652, 1179.734000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679733.512238, 1179.734000]: Sending IK request...
+[INFO] [1750679733.516026, 1179.738000]: IK Solution Found!
+[INFO] [1750679733.516758, 1179.739000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679733.517383, 1179.739000]: IK Solution (Joint Values): (-0.7030162587303105, 0.4410576828899302, 0.8993195906778616, 4.39952853871242e-09, 1.801215380270095, -0.7030162391990875, -0.009209912881458929, -0.009209912881458929)
+[INFO] [1750679733.518039, 1179.740000]: Moving arm to: (-0.7030162587303105, 0.4410576828899302, 0.8993195906778616, 4.39952853871242e-09, 1.801215380270095, -0.7030162391990875) in 8.0s.
+[INFO] [1750679733.518697, 1179.740000]: Arm command published. Waiting for completion...
+[INFO] [1750679741.521696, 1187.741000]: Arm movement finished.
+[INFO] [1750679749.524579, 1195.741000]: Detaching robot:link7 from blue_cube:link
+[INFO] [1750679749.526592, 1195.743000]: Detachment successful.
+[INFO] [1750679749.527313, 1195.743000]: Gripper command published. Waiting for completion...
+[INFO] [1750679757.531556, 1203.744000]: Gripper action finished.
+[INFO] [1750679757.532351, 1203.744000]: Attempting to move to TF frame 'peg_A' with offset [0.0, 0.0, 0.07].
+[INFO] [1750679757.533044, 1203.745000]: Target frame 'peg_A' found at [0.13, -0.1, 0.0]. Moving to final pose.
+[INFO] [1750679757.533569, 1203.746000]: Moving arm to pose: position: 
+  x: 0.13
+  y: -0.1
+  z: 0.07
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679757.534086, 1203.746000]: Waiting for '/compute_ik' service...
+[INFO] [1750679757.535331, 1203.747000]: Service is available.
+[INFO] [1750679757.535994, 1203.748000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679757.536455, 1203.748000]: Sending IK request...
+[INFO] [1750679757.540762, 1203.753000]: IK Solution Found!
+[INFO] [1750679757.541541, 1203.753000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679757.542236, 1203.754000]: IK Solution (Joint Values): (-0.7030162384800015, 0.5258656875731408, 0.5595559793259646, -1.2116888209393192e-07, 2.0561709932802863, -0.7030164961782293, 0.018822808773570014, 0.018822808773570014)
+[INFO] [1750679757.542929, 1203.755000]: Moving arm to: (-0.7030162384800015, 0.5258656875731408, 0.5595559793259646, -1.2116888209393192e-07, 2.0561709932802863, -0.7030164961782293) in 8.0s.
+[INFO] [1750679757.543632, 1203.756000]: Arm command published. Waiting for completion...
+[INFO] [1750679765.547096, 1211.756000]: Arm movement finished.
+[INFO] [1750679773.550545, 1219.756000]: Object 'peg_A' released successfully.
+[INFO] [1750679773.551342, 1219.756000]: Moving arm to home position.
+[INFO] [1750679773.551953, 1219.757000]: Moving arm to: [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194] in 8.0s.
+[INFO] [1750679773.552453, 1219.757000]: Arm command published. Waiting for completion...
+[INFO] [1750679781.556438, 1227.758000]: Arm movement finished.
+[INFO] [1750679781.557254, 1227.758000]: Successfully moved blue_cube to frame 'peg_A' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679781.557874, 1227.759000]: Move execution complete. Waiting a moment for state to settle...
+[INFO] [1750679784.558566, 1230.759000]: Fetching the latest game state from /hanoi/game_state...
+[INFO] [1750679784.591468, 1230.791000]: Received game state: {"A": [2], "B": [3, 1], "C": []}
+[INFO] [1750679784.592147, 1230.792000]: Asking LLM for the next move...
+[INFO] [1750679784.592916, 1230.793000]: Waiting for a move command from the LLM on /hanoi/move...
+[INFO] [1750679784.695825, 1230.896000]: Received move command: {"source_peg": "B", "destination_peg": "A"}
+[INFO] [1750679784.696506, 1230.896000]: Fetching the latest game state from /hanoi/game_state...
+[INFO] [1750679784.789116, 1230.989000]: Received game state: {"A": [2], "B": [3, 1], "C": []}
+[INFO] [1750679784.789778, 1230.990000]: Executing move: red_cube -> blue_cube
+[INFO] [1750679784.790273, 1230.990000]: Attempting to move red_cube to TF frame 'blue_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679784.790839, 1230.991000]: Gripper command published. Waiting for completion...
+[INFO] [1750679792.794583, 1238.991000]: Gripper action finished.
+[INFO] [1750679792.795855, 1238.992000]: Grabbing object 'red_cube'...
+[INFO] [1750679792.796664, 1238.993000]: Attempting to move to TF frame 'red_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679792.797407, 1238.993000]: Target frame 'red_cube' found at [0.1324810782556796, -0.00013125609554445232, 0.02966965476889015]. Moving to final pose.
+[INFO] [1750679792.798070, 1238.994000]: Moving arm to pose: position: 
+  x: 0.1324810782556796
+  y: -0.00013125609554445232
+  z: 0.07966965476889015
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679792.798635, 1238.995000]: Waiting for '/compute_ik' service...
+[INFO] [1750679792.799867, 1238.996000]: Service is available.
+[INFO] [1750679792.800404, 1238.996000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679792.800902, 1238.997000]: Sending IK request...
+[INFO] [1750679792.802326, 1238.998000]: IK Solution Found!
+[INFO] [1750679792.802868, 1238.999000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679792.803563, 1239.000000]: IK Solution (Joint Values): (-0.001089436829598136, 0.2102808233959457, 0.9216743064032765, 8.838379084080952e-10, 2.0096375240697117, -0.0010894356531238687, 0.01899940223409311, 0.01899940223409311)
+[INFO] [1750679792.804395, 1239.000000]: Moving arm to: (-0.001089436829598136, 0.2102808233959457, 0.9216743064032765, 8.838379084080952e-10, 2.0096375240697117, -0.0010894356531238687) in 8.0s.
+[INFO] [1750679792.804936, 1239.001000]: Arm command published. Waiting for completion...
+[INFO] [1750679800.808198, 1247.001000]: Arm movement finished.
+[INFO] [1750679808.811571, 1255.001000]: Attempting to move to TF frame 'red_cube' with offset [0.0, 0.0, 0.015].
+[INFO] [1750679808.812317, 1255.001000]: Target frame 'red_cube' found at [0.1324810782556796, -0.00013125609554445232, 0.02966965476889015]. Moving to final pose.
+[INFO] [1750679808.812893, 1255.002000]: Moving arm to pose: position: 
+  x: 0.1324810782556796
+  y: -0.00013125609554445232
+  z: 0.04466965476889015
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679808.813339, 1255.002000]: Waiting for '/compute_ik' service...
+[INFO] [1750679808.814616, 1255.004000]: Service is available.
+[INFO] [1750679808.815269, 1255.004000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679808.815899, 1255.005000]: Sending IK request...
+[INFO] [1750679808.817489, 1255.006000]: IK Solution Found!
+[INFO] [1750679808.818107, 1255.007000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679808.818697, 1255.008000]: IK Solution (Joint Values): (-0.0010970664729686701, 0.13151558684809164, 1.365147431384307, 2.367715163229868e-07, 1.6449295704506257, -0.0010971897185812268, 0.0190008173624389, 0.0190008173624389)
+[INFO] [1750679808.819161, 1255.008000]: Moving arm to: (-0.0010970664729686701, 0.13151558684809164, 1.365147431384307, 2.367715163229868e-07, 1.6449295704506257, -0.0010971897185812268) in 8.0s.
+[INFO] [1750679808.819745, 1255.009000]: Arm command published. Waiting for completion...
+[INFO] [1750679816.822586, 1263.009000]: Arm movement finished.
+[INFO] [1750679824.826995, 1271.009000]: Gripper command published. Waiting for completion...
+[INFO] [1750679832.832076, 1279.011000]: Gripper action finished.
+[INFO] [1750679832.832803, 1279.011000]: Attempting to move to TF frame 'red_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679832.833457, 1279.012000]: Target frame 'red_cube' found at [0.13372851910874253, -0.005468640606196157, 0.029802578989031547]. Moving to final pose.
+[INFO] [1750679832.833956, 1279.012000]: Moving arm to pose: position: 
+  x: 0.13372851910874253
+  y: -0.005468640606196157
+  z: 0.07980257898903155
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679832.834486, 1279.013000]: Waiting for '/compute_ik' service...
+[INFO] [1750679832.835608, 1279.014000]: Service is available.
+[INFO] [1750679832.836180, 1279.015000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679832.836694, 1279.015000]: Sending IK request...
+[INFO] [1750679832.838521, 1279.017000]: IK Solution Found!
+[INFO] [1750679832.839116, 1279.018000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679832.839718, 1279.018000]: IK Solution (Joint Values): (-0.04489470911314457, 0.22348946189667954, 0.9033285447487905, 1.1521043218751395e-08, 2.014774645467767, -0.044894713852284746, -0.008993109800139789, -0.008993109800139789)
+[INFO] [1750679832.840373, 1279.019000]: Moving arm to: (-0.04489470911314457, 0.22348946189667954, 0.9033285447487905, 1.1521043218751395e-08, 2.014774645467767, -0.044894713852284746) in 8.0s.
+[INFO] [1750679832.840871, 1279.019000]: Arm command published. Waiting for completion...
+[INFO] [1750679832.841398, 1279.020000]: Arm movement finished.
+[INFO] [1750679834.841819, 1281.020000]: Attaching robot:link7 to red_cube:link
+[INFO] [1750679834.844109, 1281.022000]: Attachment successful.
+[INFO] [1750679842.846838, 1289.022000]: Moving arm to home position.
+[INFO] [1750679842.847646, 1289.022000]: Moving arm to: [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194] in 8.0s.
+[INFO] [1750679842.848275, 1289.023000]: Arm command published. Waiting for completion...
+[INFO] [1750679850.851557, 1297.024000]: Arm movement finished.
+[INFO] [1750679850.852304, 1297.024000]: Moving red_cube to frame 'blue_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679850.852871, 1297.025000]: Releasing object 'blue_cube'...
+[INFO] [1750679850.853365, 1297.025000]: Attempting to move to TF frame 'blue_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679850.853931, 1297.026000]: Target frame 'blue_cube' found at [0.13577324545097547, -0.09833447526290044, 0.009925708819378334]. Moving to final pose.
+[INFO] [1750679850.854426, 1297.026000]: Moving arm to pose: position: 
+  x: 0.13577324545097547
+  y: -0.09833447526290044
+  z: 0.05992570881937834
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679850.855000, 1297.027000]: Waiting for '/compute_ik' service...
+[INFO] [1750679850.856340, 1297.028000]: Service is available.
+[INFO] [1750679850.857071, 1297.029000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679850.857804, 1297.029000]: Sending IK request...
+[INFO] [1750679850.860906, 1297.033000]: IK Solution Found!
+[INFO] [1750679850.861480, 1297.033000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679850.862044, 1297.034000]: IK Solution (Joint Values): (-0.6713612438502625, 0.5109857629354716, 0.6900690862807427, 2.6205500924654943e-08, 1.94053780149446, -0.6713611676201741, -0.009013759574672629, -0.009013759574672629)
+[INFO] [1750679850.862669, 1297.035000]: Moving arm to: (-0.6713612438502625, 0.5109857629354716, 0.6900690862807427, 2.6205500924654943e-08, 1.94053780149446, -0.6713611676201741) in 8.0s.
+[INFO] [1750679850.863234, 1297.035000]: Arm command published. Waiting for completion...
+[INFO] [1750679858.867378, 1305.036000]: Arm movement finished.
+[INFO] [1750679866.870539, 1313.036000]: Detaching robot:link7 from red_cube:link
+[INFO] [1750679866.872827, 1313.038000]: Detachment successful.
+[INFO] [1750679866.873605, 1313.038000]: Gripper command published. Waiting for completion...
+[INFO] [1750679874.877145, 1321.039000]: Gripper action finished.
+[INFO] [1750679874.877928, 1321.039000]: Attempting to move to TF frame 'blue_cube' with offset [0.0, 0.0, 0.07].
+[INFO] [1750679874.878557, 1321.040000]: Target frame 'blue_cube' found at [0.13576402842496701, -0.09833479568235384, 0.0096669522746686]. Moving to final pose.
+[INFO] [1750679874.879057, 1321.040000]: Moving arm to pose: position: 
+  x: 0.13576402842496701
+  y: -0.09833479568235384
+  z: 0.0796669522746686
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679874.879566, 1321.041000]: Waiting for '/compute_ik' service...
+[INFO] [1750679874.880785, 1321.042000]: Service is available.
+[INFO] [1750679874.881412, 1321.043000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679874.881905, 1321.043000]: Sending IK request...
+[ERROR] [1750679875.883693, 1322.045000]: IK Failed with error code: -31
+[WARN] [1750679875.884636, 1322.046000]: IK solution not found on attempt 1. Retrying with different orientation.
+[INFO] [1750679875.885269, 1322.046000]: Waiting for '/compute_ik' service...
+[INFO] [1750679875.886626, 1322.048000]: Service is available.
+[INFO] [1750679875.887164, 1322.048000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679875.887669, 1322.049000]: Sending IK request...
+[INFO] [1750679875.890741, 1322.052000]: IK Solution Found!
+[INFO] [1750679875.891408, 1322.052000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679875.891957, 1322.053000]: IK Solution (Joint Values): (-0.7249051776686138, 0.5121595366739979, 0.4808315440707795, 0.059920948187943315, 2.0889831796106653, -0.6936671121798167, 0.01900577938692864, 0.01900577938692864)
+[INFO] [1750679875.892414, 1322.053000]: Moving arm to: (-0.7249051776686138, 0.5121595366739979, 0.4808315440707795, 0.059920948187943315, 2.0889831796106653, -0.6936671121798167) in 8.0s.
+[INFO] [1750679875.892946, 1322.054000]: Arm command published. Waiting for completion...
+[INFO] [1750679883.896326, 1330.054000]: Arm movement finished.
+[INFO] [1750679891.899553, 1338.054000]: Object 'blue_cube' released successfully.
+[INFO] [1750679891.900532, 1338.054000]: Moving arm to home position.
+[INFO] [1750679891.901090, 1338.055000]: Moving arm to: [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194] in 8.0s.
+[INFO] [1750679891.901646, 1338.056000]: Arm command published. Waiting for completion...
+[INFO] [1750679899.905663, 1346.056000]: Arm movement finished.
+[INFO] [1750679899.906487, 1346.056000]: Successfully moved red_cube to frame 'blue_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679899.907171, 1346.057000]: Move execution complete. Waiting a moment for state to settle...
+[INFO] [1750679902.908586, 1349.058000]: Fetching the latest game state from /hanoi/game_state...
+[INFO] [1750679902.941600, 1349.090000]: Received game state: {"A": [2, 1], "B": [3], "C": []}
+[INFO] [1750679902.942361, 1349.091000]: Asking LLM for the next move...
+[INFO] [1750679902.942860, 1349.092000]: Waiting for a move command from the LLM on /hanoi/move...
+[INFO] [1750679903.045666, 1349.194000]: Received move command: {"source_peg": "B", "destination_peg": "C"}
+[INFO] [1750679903.046266, 1349.195000]: Fetching the latest game state from /hanoi/game_state...
+[INFO] [1750679903.138917, 1349.288000]: Received game state: {"A": [2, 1], "B": [3], "C": []}
+[INFO] [1750679903.139488, 1349.288000]: Executing move: green_cube -> peg_C
+[INFO] [1750679903.140113, 1349.289000]: Attempting to move green_cube to TF frame 'peg_C' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679903.140777, 1349.290000]: Gripper command published. Waiting for completion...
+[INFO] [1750679911.144542, 1357.290000]: Gripper action finished.
+[INFO] [1750679911.145494, 1357.290000]: Grabbing object 'green_cube'...
+[INFO] [1750679911.146148, 1357.291000]: Attempting to move to TF frame 'green_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679911.146887, 1357.292000]: Target frame 'green_cube' found at [0.12981404072762148, -1.0756383001360024e-05, 0.009733436961042547]. Moving to final pose.
+[INFO] [1750679911.147425, 1357.292000]: Moving arm to pose: position: 
+  x: 0.12981404072762148
+  y: -1.0756383001360024e-05
+  z: 0.05973343696104255
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679911.147963, 1357.293000]: Waiting for '/compute_ik' service...
+[INFO] [1750679911.149145, 1357.294000]: Service is available.
+[INFO] [1750679911.149777, 1357.295000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679911.150297, 1357.295000]: Sending IK request...
+[INFO] [1750679911.152076, 1357.297000]: IK Solution Found!
+[INFO] [1750679911.152732, 1357.298000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679911.153247, 1357.298000]: IK Solution (Joint Values): (-9.122896109071293e-05, 0.1279270894494804, 1.2234410441456758, -3.885254118619506e-10, 1.790224517831592, -9.122454000149265e-05, 0.018984406974670232, 0.018984406974670232)
+[INFO] [1750679911.153789, 1357.299000]: Moving arm to: (-9.122896109071293e-05, 0.1279270894494804, 1.2234410441456758, -3.885254118619506e-10, 1.790224517831592, -9.122454000149265e-05) in 8.0s.
+[INFO] [1750679911.154250, 1357.299000]: Arm command published. Waiting for completion...
+[INFO] [1750679919.157549, 1365.300000]: Arm movement finished.
+[INFO] [1750679927.163022, 1373.301000]: Attempting to move to TF frame 'green_cube' with offset [0.0, 0.0, 0.015].
+[INFO] [1750679927.163844, 1373.301000]: Target frame 'green_cube' found at [0.12981404072762148, -1.0756383001360024e-05, 0.009733436961042547]. Moving to final pose.
+[INFO] [1750679927.164488, 1373.302000]: Moving arm to pose: position: 
+  x: 0.12981404072762148
+  y: -1.0756383001360024e-05
+  z: 0.02473343696104255
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679927.165035, 1373.303000]: Waiting for '/compute_ik' service...
+[INFO] [1750679927.166380, 1373.304000]: Service is available.
+[INFO] [1750679927.167094, 1373.304000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679927.168207, 1373.306000]: Sending IK request...
+[INFO] [1750679927.170300, 1373.308000]: IK Solution Found!
+[INFO] [1750679927.171069, 1373.309000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679927.171792, 1373.309000]: IK Solution (Joint Values): (-9.136284893912353e-05, 0.11363299300510517, 1.5767480051039158, 3.5311011996499797e-08, 1.4512112587763089, -9.17922754140943e-05, 0.019002934711176568, 0.019002934711176568)
+[INFO] [1750679927.172477, 1373.310000]: Moving arm to: (-9.136284893912353e-05, 0.11363299300510517, 1.5767480051039158, 3.5311011996499797e-08, 1.4512112587763089, -9.17922754140943e-05) in 8.0s.
+[INFO] [1750679927.173137, 1373.311000]: Arm command published. Waiting for completion...
+[INFO] [1750679935.176507, 1381.311000]: Arm movement finished.
+[INFO] [1750679943.179597, 1389.311000]: Gripper command published. Waiting for completion...
+[INFO] [1750679951.183317, 1397.311000]: Gripper action finished.
+[INFO] [1750679951.184098, 1397.311000]: Attempting to move to TF frame 'green_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679951.184756, 1397.312000]: Target frame 'green_cube' found at [0.13411251576865454, -0.01308307274466853, 0.009995859812997134]. Moving to final pose.
+[INFO] [1750679951.185302, 1397.312000]: Moving arm to pose: position: 
+  x: 0.13411251576865454
+  y: -0.01308307274466853
+  z: 0.05999585981299714
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679951.185814, 1397.313000]: Waiting for '/compute_ik' service...
+[INFO] [1750679951.187006, 1397.314000]: Service is available.
+[INFO] [1750679951.187592, 1397.315000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679951.188033, 1397.315000]: Sending IK request...
+[INFO] [1750679951.189672, 1397.317000]: IK Solution Found!
+[INFO] [1750679951.190268, 1397.317000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679951.190932, 1397.318000]: IK Solution (Joint Values): (-0.10673474141893341, 0.17063863595370715, 1.1704263669929467, 1.611826451097982e-07, 1.8005269999249893, -0.10673542209366514, -0.009055579912010512, -0.009055579912010512)
+[INFO] [1750679951.191625, 1397.319000]: Moving arm to: (-0.10673474141893341, 0.17063863595370715, 1.1704263669929467, 1.611826451097982e-07, 1.8005269999249893, -0.10673542209366514) in 8.0s.
+[INFO] [1750679951.192135, 1397.319000]: Arm command published. Waiting for completion...
+[INFO] [1750679951.192692, 1397.320000]: Arm movement finished.
+[INFO] [1750679953.193832, 1399.320000]: Attaching robot:link7 to green_cube:link
+[INFO] [1750679953.196948, 1399.323000]: Attachment successful.
+[INFO] [1750679961.199978, 1407.323000]: Moving arm to home position.
+[INFO] [1750679961.200735, 1407.323000]: Moving arm to: [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194] in 8.0s.
+[INFO] [1750679961.201410, 1407.324000]: Arm command published. Waiting for completion...
+[INFO] [1750679969.202553, 1415.324000]: Arm movement finished.
+[INFO] [1750679969.203311, 1415.324000]: Moving green_cube to frame 'peg_C' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679969.203872, 1415.325000]: Releasing object 'peg_C'...
+[INFO] [1750679969.204316, 1415.325000]: Attempting to move to TF frame 'peg_C' with offset [0.0, 0.0, 0.05].
+[INFO] [1750679969.204889, 1415.326000]: Target frame 'peg_C' found at [0.13, 0.1, 0.0]. Moving to final pose.
+[INFO] [1750679969.205441, 1415.326000]: Moving arm to pose: position: 
+  x: 0.13
+  y: 0.1
+  z: 0.05
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679969.205969, 1415.327000]: Waiting for '/compute_ik' service...
+[INFO] [1750679969.207176, 1415.328000]: Service is available.
+[INFO] [1750679969.207961, 1415.329000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679969.208523, 1415.329000]: Sending IK request...
+[INFO] [1750679969.211973, 1415.333000]: IK Solution Found!
+[INFO] [1750679969.212686, 1415.334000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679969.213280, 1415.334000]: IK Solution (Joint Values): (0.7030162327490508, 0.441064514259647, 0.8993049529582962, 4.3241572972522037e-11, 1.8012231864316786, 0.7030162328367747, -0.008946349946516358, -0.008946349946516358)
+[INFO] [1750679969.213871, 1415.335000]: Moving arm to: (0.7030162327490508, 0.441064514259647, 0.8993049529582962, 4.3241572972522037e-11, 1.8012231864316786, 0.7030162328367747) in 8.0s.
+[INFO] [1750679969.214460, 1415.335000]: Arm command published. Waiting for completion...
+[INFO] [1750679977.219527, 1423.336000]: Arm movement finished.
+[INFO] [1750679985.222564, 1431.336000]: Detaching robot:link7 from green_cube:link
+[INFO] [1750679985.224914, 1431.338000]: Detachment successful.
+[INFO] [1750679985.225735, 1431.339000]: Gripper command published. Waiting for completion...
+[INFO] [1750679993.229360, 1439.339000]: Gripper action finished.
+[INFO] [1750679993.230228, 1439.339000]: Attempting to move to TF frame 'peg_C' with offset [0.0, 0.0, 0.07].
+[INFO] [1750679993.230864, 1439.340000]: Target frame 'peg_C' found at [0.13, 0.1, 0.0]. Moving to final pose.
+[INFO] [1750679993.231494, 1439.341000]: Moving arm to pose: position: 
+  x: 0.13
+  y: 0.1
+  z: 0.07
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750679993.232004, 1439.341000]: Waiting for '/compute_ik' service...
+[INFO] [1750679993.233273, 1439.343000]: Service is available.
+[INFO] [1750679993.233827, 1439.343000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750679993.234350, 1439.344000]: Sending IK request...
+[INFO] [1750679993.242587, 1439.351000]: IK Solution Found!
+[INFO] [1750679993.244077, 1439.353000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750679993.245044, 1439.354000]: IK Solution (Joint Values): (0.7030162383958033, 0.5258694590361304, 0.5595478380843275, -9.7841612257647e-09, 2.0561753569073487, 0.7030162173657741, 0.018856449279298245, 0.018856449279298245)
+[INFO] [1750679993.246086, 1439.355000]: Moving arm to: (0.7030162383958033, 0.5258694590361304, 0.5595478380843275, -9.7841612257647e-09, 2.0561753569073487, 0.7030162173657741) in 8.0s.
+[INFO] [1750679993.247071, 1439.356000]: Arm command published. Waiting for completion...
+[INFO] [1750680001.250530, 1447.357000]: Arm movement finished.
+[INFO] [1750680009.253562, 1455.357000]: Object 'peg_C' released successfully.
+[INFO] [1750680009.254351, 1455.357000]: Moving arm to home position.
+[INFO] [1750680009.254976, 1455.358000]: Moving arm to: [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194] in 8.0s.
+[INFO] [1750680009.255581, 1455.359000]: Arm command published. Waiting for completion...
+[INFO] [1750680017.260131, 1463.359000]: Arm movement finished.
+[INFO] [1750680017.260947, 1463.359000]: Successfully moved green_cube to frame 'peg_C' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680017.261586, 1463.360000]: Move execution complete. Waiting a moment for state to settle...
+[INFO] [1750680020.263438, 1466.361000]: Fetching the latest game state from /hanoi/game_state...
+[INFO] [1750680020.296232, 1466.393000]: Received game state: {"A": [2, 1], "B": [], "C": [3]}
+[INFO] [1750680020.296881, 1466.394000]: Asking LLM for the next move...
+[INFO] [1750680020.297457, 1466.395000]: Waiting for a move command from the LLM on /hanoi/move...
+[INFO] [1750680020.410767, 1466.508000]: Received move command: {"source_peg": "A", "destination_peg": "B"}
+[INFO] [1750680020.411682, 1466.509000]: Fetching the latest game state from /hanoi/game_state...
+[INFO] [1750680020.494507, 1466.591000]: Received game state: {"A": [2, 1], "B": [], "C": [3]}
+[INFO] [1750680020.495094, 1466.592000]: Executing move: red_cube -> peg_B
+[INFO] [1750680020.495640, 1466.593000]: Attempting to move red_cube to TF frame 'peg_B' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680020.496222, 1466.593000]: Gripper command published. Waiting for completion...
+[INFO] [1750680028.499631, 1474.594000]: Gripper action finished.
+[INFO] [1750680028.500982, 1474.595000]: Grabbing object 'red_cube'...
+[INFO] [1750680028.501886, 1474.596000]: Attempting to move to TF frame 'red_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680028.502532, 1474.596000]: Target frame 'red_cube' found at [0.1376069864400782, -0.09808444326572219, 0.0295500447787766]. Moving to final pose.
+[INFO] [1750680028.503138, 1474.597000]: Moving arm to pose: position: 
+  x: 0.1376069864400782
+  y: -0.09808444326572219
+  z: 0.0795500447787766
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680028.503856, 1474.598000]: Waiting for '/compute_ik' service...
+[INFO] [1750680028.505049, 1474.599000]: Service is available.
+[INFO] [1750680028.505919, 1474.600000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680028.506777, 1474.601000]: Sending IK request...
+[ERROR] [1750680029.508519, 1475.601000]: IK Failed with error code: -31
+[WARN] [1750680029.509261, 1475.602000]: IK solution not found on attempt 1. Retrying with different orientation.
+[INFO] [1750680029.509894, 1475.603000]: Waiting for '/compute_ik' service...
+[INFO] [1750680029.511429, 1475.604000]: Service is available.
+[INFO] [1750680029.512411, 1475.605000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680029.513055, 1475.606000]: Sending IK request...
+[INFO] [1750680029.517776, 1475.611000]: IK Solution Found!
+[INFO] [1750680029.518500, 1475.611000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680029.519092, 1475.612000]: IK Solution (Joint Values): (-0.7154789321347729, 0.5291476362101649, 0.4532200595299663, 0.05962378794372031, 2.099117750512196, -0.6838712743943434, 0.018998660259441087, 0.018998660259441087)
+[INFO] [1750680029.519598, 1475.612000]: Moving arm to: (-0.7154789321347729, 0.5291476362101649, 0.4532200595299663, 0.05962378794372031, 2.099117750512196, -0.6838712743943434) in 8.0s.
+[INFO] [1750680029.520115, 1475.613000]: Arm command published. Waiting for completion...
+[INFO] [1750680037.523220, 1483.613000]: Arm movement finished.
+[INFO] [1750680045.526564, 1491.613000]: Attempting to move to TF frame 'red_cube' with offset [0.0, 0.0, 0.015].
+[INFO] [1750680045.527348, 1491.613000]: Target frame 'red_cube' found at [0.1376069864400782, -0.09808444326572219, 0.0295500447787766]. Moving to final pose.
+[INFO] [1750680045.528095, 1491.614000]: Moving arm to pose: position: 
+  x: 0.1376069864400782
+  y: -0.09808444326572219
+  z: 0.044550044778776596
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680045.528834, 1491.615000]: Waiting for '/compute_ik' service...
+[INFO] [1750680045.530032, 1491.616000]: Service is available.
+[INFO] [1750680045.530617, 1491.617000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680045.531150, 1491.617000]: Sending IK request...
+[INFO] [1750680045.533188, 1491.619000]: IK Solution Found!
+[INFO] [1750680045.533939, 1491.620000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680045.534500, 1491.620000]: IK Solution (Joint Values): (-0.6629754614115405, 0.4764426290017778, 0.8982701863650057, -3.894654329395402e-12, 1.7668798382138016, -0.6629754612380283, 0.018947271608947255, 0.018947271608947255)
+[INFO] [1750680045.535015, 1491.621000]: Moving arm to: (-0.6629754614115405, 0.4764426290017778, 0.8982701863650057, -3.894654329395402e-12, 1.7668798382138016, -0.6629754612380283) in 8.0s.
+[INFO] [1750680045.535549, 1491.622000]: Arm command published. Waiting for completion...
+[INFO] [1750680053.539536, 1499.622000]: Arm movement finished.
+[INFO] [1750680061.543364, 1507.622000]: Gripper command published. Waiting for completion...
+[INFO] [1750680069.546576, 1515.622000]: Gripper action finished.
+[INFO] [1750680069.547508, 1515.622000]: Attempting to move to TF frame 'red_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680069.548169, 1515.623000]: Target frame 'red_cube' found at [0.13803512674328358, -0.1034077425809085, 0.029886245410672342]. Moving to final pose.
+[INFO] [1750680069.548787, 1515.624000]: Moving arm to pose: position: 
+  x: 0.13803512674328358
+  y: -0.1034077425809085
+  z: 0.07988624541067235
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680069.549276, 1515.624000]: Waiting for '/compute_ik' service...
+[INFO] [1750680069.550536, 1515.626000]: Service is available.
+[INFO] [1750680069.551121, 1515.626000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680069.551773, 1515.627000]: Sending IK request...
+[ERROR] [1750680070.553532, 1516.628000]: IK Failed with error code: -31
+[WARN] [1750680070.554479, 1516.629000]: IK solution not found on attempt 1. Retrying with different orientation.
+[INFO] [1750680070.555152, 1516.629000]: Waiting for '/compute_ik' service...
+[INFO] [1750680070.556698, 1516.631000]: Service is available.
+[INFO] [1750680070.557360, 1516.631000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680070.557979, 1516.632000]: Sending IK request...
+[ERROR] [1750680071.560257, 1517.634000]: IK Failed with error code: -31
+[WARN] [1750680071.561096, 1517.635000]: IK solution not found on attempt 2. Retrying with different orientation.
+[INFO] [1750680071.561872, 1517.636000]: Waiting for '/compute_ik' service...
+[INFO] [1750680071.563401, 1517.637000]: Service is available.
+[INFO] [1750680071.564077, 1517.638000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680071.564718, 1517.639000]: Sending IK request...
+[INFO] [1750680071.566792, 1517.641000]: IK Solution Found!
+[INFO] [1750680071.567368, 1517.641000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680071.567916, 1517.642000]: IK Solution (Joint Values): (-0.7990880575374748, 0.4479084721165983, 0.6007586033276624, 0.12252373372962592, 1.980165873602824, -0.7439219604169206, -0.00925374918940799, -0.00925374918940799)
+[INFO] [1750680071.568414, 1517.642000]: Moving arm to: (-0.7990880575374748, 0.4479084721165983, 0.6007586033276624, 0.12252373372962592, 1.980165873602824, -0.7439219604169206) in 8.0s.
+[INFO] [1750680071.568915, 1517.643000]: Arm command published. Waiting for completion...
+[INFO] [1750680071.569382, 1517.643000]: Arm movement finished.
+[INFO] [1750680073.570553, 1519.644000]: Attaching robot:link7 to red_cube:link
+[INFO] [1750680073.572603, 1519.646000]: Attachment successful.
+[INFO] [1750680081.575545, 1527.646000]: Moving arm to home position.
+[INFO] [1750680081.576362, 1527.646000]: Moving arm to: [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194] in 8.0s.
+[INFO] [1750680081.576972, 1527.647000]: Arm command published. Waiting for completion...
+[INFO] [1750680089.580264, 1535.647000]: Arm movement finished.
+[INFO] [1750680089.581048, 1535.647000]: Moving red_cube to frame 'peg_B' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680089.581580, 1535.648000]: Releasing object 'peg_B'...
+[INFO] [1750680089.582011, 1535.648000]: Attempting to move to TF frame 'peg_B' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680089.582599, 1535.649000]: Target frame 'peg_B' found at [0.13, 0.0, 0.0]. Moving to final pose.
+[INFO] [1750680089.583117, 1535.649000]: Moving arm to pose: position: 
+  x: 0.13
+  y: 0.0
+  z: 0.05
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680089.583611, 1535.650000]: Waiting for '/compute_ik' service...
+[INFO] [1750680089.584702, 1535.651000]: Service is available.
+[INFO] [1750680089.585250, 1535.652000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680089.585736, 1535.652000]: Sending IK request...
+[INFO] [1750680089.587588, 1535.654000]: IK Solution Found!
+[INFO] [1750680089.588120, 1535.654000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680089.588628, 1535.655000]: IK Solution (Joint Values): (1.0025656822169448e-07, 0.11549944639475736, 1.3322483961409115, -7.3762166507163746e-09, 1.6938447968945227, 1.1450686832506865e-07, -0.009226508302359215, -0.009226508302359215)
+[INFO] [1750680089.589092, 1535.655000]: Moving arm to: (1.0025656822169448e-07, 0.11549944639475736, 1.3322483961409115, -7.3762166507163746e-09, 1.6938447968945227, 1.1450686832506865e-07) in 8.0s.
+[INFO] [1750680089.589673, 1535.656000]: Arm command published. Waiting for completion...
+[INFO] [1750680097.593400, 1543.657000]: Arm movement finished.
+[INFO] [1750680105.597511, 1551.658000]: Detaching robot:link7 from red_cube:link
+[INFO] [1750680105.599639, 1551.660000]: Detachment successful.
+[INFO] [1750680105.600235, 1551.660000]: Gripper command published. Waiting for completion...
+[INFO] [1750680113.603552, 1559.661000]: Gripper action finished.
+[INFO] [1750680113.604247, 1559.661000]: Attempting to move to TF frame 'peg_B' with offset [0.0, 0.0, 0.07].
+[INFO] [1750680113.604897, 1559.662000]: Target frame 'peg_B' found at [0.13, 0.0, 0.0]. Moving to final pose.
+[INFO] [1750680113.605382, 1559.662000]: Moving arm to pose: position: 
+  x: 0.13
+  y: 0.0
+  z: 0.07
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680113.605922, 1559.663000]: Waiting for '/compute_ik' service...
+[INFO] [1750680113.607172, 1559.664000]: Service is available.
+[INFO] [1750680113.607993, 1559.665000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680113.608585, 1559.666000]: Sending IK request...
+[INFO] [1750680113.610821, 1559.668000]: IK Solution Found!
+[INFO] [1750680113.611494, 1559.668000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680113.612154, 1559.669000]: IK Solution (Joint Values): (-1.6062601697474786e-09, 0.15385827299771046, 1.0909581341467536, 4.687999451861073e-10, 1.8967762465682785, -1.0666413710193703e-09, 0.018793038476287997, 0.018793038476287997)
+[INFO] [1750680113.612792, 1559.670000]: Moving arm to: (-1.6062601697474786e-09, 0.15385827299771046, 1.0909581341467536, 4.687999451861073e-10, 1.8967762465682785, -1.0666413710193703e-09) in 8.0s.
+[INFO] [1750680113.613375, 1559.670000]: Arm command published. Waiting for completion...
+[INFO] [1750680121.616568, 1567.671000]: Arm movement finished.
+[INFO] [1750680129.619544, 1575.671000]: Object 'peg_B' released successfully.
+[INFO] [1750680129.620273, 1575.671000]: Moving arm to home position.
+[INFO] [1750680129.620850, 1575.672000]: Moving arm to: [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194] in 8.0s.
+[INFO] [1750680129.621501, 1575.672000]: Arm command published. Waiting for completion...
+[INFO] [1750680137.626161, 1583.673000]: Arm movement finished.
+[INFO] [1750680137.627097, 1583.673000]: Successfully moved red_cube to frame 'peg_B' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680137.627749, 1583.674000]: Move execution complete. Waiting a moment for state to settle...
+[INFO] [1750680140.629493, 1586.675000]: Fetching the latest game state from /hanoi/game_state...
+[INFO] [1750680140.642557, 1586.687000]: Received game state: {"A": [2], "B": [1], "C": [3]}
+[INFO] [1750680140.643264, 1586.688000]: Asking LLM for the next move...
+[INFO] [1750680140.643838, 1586.689000]: Waiting for a move command from the LLM on /hanoi/move...
+[INFO] [1750680140.756674, 1586.802000]: Received move command: {"source_peg": "A", "destination_peg": "C"}
+[INFO] [1750680140.757261, 1586.802000]: Fetching the latest game state from /hanoi/game_state...
+[INFO] [1750680140.839856, 1586.885000]: Received game state: {"A": [2], "B": [1], "C": [3]}
+[INFO] [1750680140.840395, 1586.885000]: Executing move: blue_cube -> green_cube
+[INFO] [1750680140.840890, 1586.886000]: Attempting to move blue_cube to TF frame 'green_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680140.841390, 1586.886000]: Gripper command published. Waiting for completion...
+[INFO] [1750680148.844564, 1594.887000]: Gripper action finished.
+[INFO] [1750680148.845499, 1594.887000]: Grabbing object 'blue_cube'...
+[INFO] [1750680148.846192, 1594.888000]: Attempting to move to TF frame 'blue_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680148.847418, 1594.889000]: Target frame 'blue_cube' found at [0.1357447515749999, -0.09844336743783062, 0.0099275255967163]. Moving to final pose.
+[INFO] [1750680148.848656, 1594.890000]: Moving arm to pose: position: 
+  x: 0.1357447515749999
+  y: -0.09844336743783062
+  z: 0.059927525596716304
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680148.850069, 1594.892000]: Waiting for '/compute_ik' service...
+[INFO] [1750680148.852456, 1594.894000]: Service is available.
+[INFO] [1750680148.853555, 1594.895000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680148.854530, 1594.896000]: Sending IK request...
+[INFO] [1750680148.857749, 1594.899000]: IK Solution Found!
+[INFO] [1750680148.860115, 1594.902000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680148.861312, 1594.903000]: IK Solution (Joint Values): (-0.6720128745540707, 0.5115504248584661, 0.689125216039064, -6.597429178745085e-09, 1.940917012728584, -0.6720128929500608, 0.018981089144349723, 0.018981089144349723)
+[INFO] [1750680148.862298, 1594.904000]: Moving arm to: (-0.6720128745540707, 0.5115504248584661, 0.689125216039064, -6.597429178745085e-09, 1.940917012728584, -0.6720128929500608) in 8.0s.
+[INFO] [1750680148.863470, 1594.905000]: Arm command published. Waiting for completion...
+[INFO] [1750680156.867532, 1602.906000]: Arm movement finished.
+[INFO] [1750680164.871947, 1610.906000]: Attempting to move to TF frame 'blue_cube' with offset [0.0, 0.0, 0.015].
+[INFO] [1750680164.873032, 1610.907000]: Target frame 'blue_cube' found at [0.1357447515749999, -0.09844336743783062, 0.0099275255967163]. Moving to final pose.
+[INFO] [1750680164.873736, 1610.907000]: Moving arm to pose: position: 
+  x: 0.1357447515749999
+  y: -0.09844336743783062
+  z: 0.0249275255967163
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680164.874266, 1610.908000]: Waiting for '/compute_ik' service...
+[INFO] [1750680164.875555, 1610.909000]: Service is available.
+[INFO] [1750680164.876173, 1610.910000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680164.876617, 1610.910000]: Sending IK request...
+[INFO] [1750680164.878496, 1610.912000]: IK Solution Found!
+[INFO] [1750680164.879093, 1610.913000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680164.879562, 1610.913000]: IK Solution (Joint Values): (-0.6720128733317295, 0.44726148587149034, 1.131910058216726, 2.2097023203626793e-10, 1.5624211094265088, -0.6720128733861764, 0.019007920785416594, 0.019007920785416594)
+[INFO] [1750680164.880078, 1610.914000]: Moving arm to: (-0.6720128733317295, 0.44726148587149034, 1.131910058216726, 2.2097023203626793e-10, 1.5624211094265088, -0.6720128733861764) in 8.0s.
+[INFO] [1750680164.880558, 1610.914000]: Arm command published. Waiting for completion...
+[INFO] [1750680172.884534, 1618.915000]: Arm movement finished.
+[INFO] [1750680180.888553, 1626.915000]: Gripper command published. Waiting for completion...
+[INFO] [1750680188.892049, 1634.915000]: Gripper action finished.
+[INFO] [1750680188.892748, 1634.915000]: Attempting to move to TF frame 'blue_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680188.893425, 1634.916000]: Target frame 'blue_cube' found at [0.13577977249943954, -0.10619755784556838, 0.010036511832005756]. Moving to final pose.
+[INFO] [1750680188.893908, 1634.916000]: Moving arm to pose: position: 
+  x: 0.13577977249943954
+  y: -0.10619755784556838
+  z: 0.06003651183200576
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680188.894425, 1634.917000]: Waiting for '/compute_ik' service...
+[INFO] [1750680188.895548, 1634.918000]: Service is available.
+[INFO] [1750680188.896098, 1634.919000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680188.896614, 1634.919000]: Sending IK request...
+[INFO] [1750680188.903396, 1634.926000]: IK Solution Found!
+[INFO] [1750680188.904237, 1634.927000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680188.904823, 1634.927000]: IK Solution (Joint Values): (-0.709094650383496, 0.5744457077824023, 0.5833810460750124, -1.460545367761113e-08, 1.9837659001025658, -0.7090946870833783, -0.009181229282924292, -0.009181229282924292)
+[INFO] [1750680188.905427, 1634.928000]: Moving arm to: (-0.709094650383496, 0.5744457077824023, 0.5833810460750124, -1.460545367761113e-08, 1.9837659001025658, -0.7090946870833783) in 8.0s.
+[INFO] [1750680188.905937, 1634.928000]: Arm command published. Waiting for completion...
+[INFO] [1750680188.906460, 1634.929000]: Arm movement finished.
+[INFO] [1750680190.906882, 1636.929000]: Attaching robot:link7 to blue_cube:link
+[INFO] [1750680190.908917, 1636.931000]: Attachment successful.
+[INFO] [1750680198.912178, 1644.931000]: Moving arm to home position.
+[INFO] [1750680198.912951, 1644.931000]: Moving arm to: [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194] in 8.0s.
+[INFO] [1750680198.913613, 1644.932000]: Arm command published. Waiting for completion...
+[INFO] [1750680206.916527, 1652.932000]: Arm movement finished.
+[INFO] [1750680206.917583, 1652.933000]: Moving blue_cube to frame 'green_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680206.918303, 1652.933000]: Releasing object 'green_cube'...
+[INFO] [1750680206.918927, 1652.934000]: Attempting to move to TF frame 'green_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680206.919639, 1652.935000]: Target frame 'green_cube' found at [0.1382825105673613, 0.08877196484921064, 0.009854103694692154]. Moving to final pose.
+[INFO] [1750680206.920352, 1652.935000]: Moving arm to pose: position: 
+  x: 0.1382825105673613
+  y: 0.08877196484921064
+  z: 0.05985410369469216
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680206.920940, 1652.936000]: Waiting for '/compute_ik' service...
+[INFO] [1750680206.922417, 1652.937000]: Service is available.
+[INFO] [1750680206.923225, 1652.938000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680206.923862, 1652.939000]: Sending IK request...
+[INFO] [1750680206.928333, 1652.943000]: IK Solution Found!
+[INFO] [1750680206.929000, 1652.944000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680206.929540, 1652.945000]: IK Solution (Joint Values): (0.6127122499440832, 0.46830798188088457, 0.7588780589675314, 1.284526556073317e-06, 1.9144057121462317, 0.6127149437880759, -0.009214383597346368, -0.009214383597346368)
+[INFO] [1750680206.930059, 1652.945000]: Moving arm to: (0.6127122499440832, 0.46830798188088457, 0.7588780589675314, 1.284526556073317e-06, 1.9144057121462317, 0.6127149437880759) in 8.0s.
+[INFO] [1750680206.930568, 1652.946000]: Arm command published. Waiting for completion...
+[INFO] [1750680214.934123, 1660.946000]: Arm movement finished.
+[INFO] [1750680222.938497, 1668.947000]: Detaching robot:link7 from blue_cube:link
+[INFO] [1750680222.940581, 1668.949000]: Detachment successful.
+[INFO] [1750680222.941202, 1668.949000]: Gripper command published. Waiting for completion...
+[INFO] [1750680230.944542, 1676.950000]: Gripper action finished.
+[INFO] [1750680230.945461, 1676.950000]: Attempting to move to TF frame 'green_cube' with offset [0.0, 0.0, 0.07].
+[INFO] [1750680230.946146, 1676.951000]: Target frame 'green_cube' found at [0.13828562489441285, 0.08877024851591249, 0.009815554707455942]. Moving to final pose.
+[INFO] [1750680230.946717, 1676.951000]: Moving arm to pose: position: 
+  x: 0.13828562489441285
+  y: 0.08877024851591249
+  z: 0.07981555470745595
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680230.947207, 1676.952000]: Waiting for '/compute_ik' service...
+[INFO] [1750680230.948480, 1676.953000]: Service is available.
+[INFO] [1750680230.949085, 1676.954000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680230.949666, 1676.955000]: Sending IK request...
+[ERROR] [1750680231.951598, 1677.957000]: IK Failed with error code: -31
+[WARN] [1750680231.952347, 1677.957000]: IK solution not found on attempt 1. Retrying with different orientation.
+[INFO] [1750680231.952915, 1677.958000]: Waiting for '/compute_ik' service...
+[INFO] [1750680231.954073, 1677.959000]: Service is available.
+[INFO] [1750680231.954654, 1677.960000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680231.955185, 1677.960000]: Sending IK request...
+[INFO] [1750680231.957116, 1677.962000]: IK Solution Found!
+[INFO] [1750680231.957859, 1677.963000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680231.958395, 1677.963000]: IK Solution (Joint Values): (0.6635869724918393, 0.4565048591220106, 0.5711079005411505, -0.05452905383916855, 2.05144882087564, 0.6368577431268793, 0.01900794260970331, 0.01900794260970331)
+[INFO] [1750680231.958960, 1677.964000]: Moving arm to: (0.6635869724918393, 0.4565048591220106, 0.5711079005411505, -0.05452905383916855, 2.05144882087564, 0.6368577431268793) in 8.0s.
+[INFO] [1750680231.959556, 1677.964000]: Arm command published. Waiting for completion...
+[INFO] [1750680239.964039, 1685.965000]: Arm movement finished.
+[INFO] [1750680247.967536, 1693.965000]: Object 'green_cube' released successfully.
+[INFO] [1750680247.968369, 1693.965000]: Moving arm to home position.
+[INFO] [1750680247.968923, 1693.966000]: Moving arm to: [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194] in 8.0s.
+[INFO] [1750680247.969430, 1693.966000]: Arm command published. Waiting for completion...
+[INFO] [1750680255.973275, 1701.967000]: Arm movement finished.
+[INFO] [1750680255.974129, 1701.967000]: Successfully moved blue_cube to frame 'green_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680255.974755, 1701.968000]: Move execution complete. Waiting a moment for state to settle...
+[INFO] [1750680258.976587, 1704.969000]: Fetching the latest game state from /hanoi/game_state...
+[INFO] [1750680258.999637, 1704.991000]: Received game state: {"A": [], "B": [1], "C": [3, 2]}
+[INFO] [1750680259.000269, 1704.992000]: Asking LLM for the next move...
+[INFO] [1750680259.000845, 1704.993000]: Waiting for a move command from the LLM on /hanoi/move...
+[INFO] [1750680259.103683, 1705.095000]: Received move command: {"source_peg": "B", "destination_peg": "C"}
+[INFO] [1750680259.104324, 1705.096000]: Fetching the latest game state from /hanoi/game_state...
+[INFO] [1750680259.197022, 1705.189000]: Received game state: {"A": [], "B": [1], "C": [3, 2]}
+[INFO] [1750680259.197610, 1705.190000]: Executing move: red_cube -> blue_cube
+[INFO] [1750680259.198179, 1705.190000]: Attempting to move red_cube to TF frame 'blue_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680259.198771, 1705.191000]: Gripper command published. Waiting for completion...
+[INFO] [1750680267.202493, 1713.191000]: Gripper action finished.
+[INFO] [1750680267.203354, 1713.191000]: Grabbing object 'red_cube'...
+[INFO] [1750680267.203938, 1713.192000]: Attempting to move to TF frame 'red_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680267.204467, 1713.192000]: Target frame 'red_cube' found at [0.13264811510252497, -2.7879527952025266e-05, 0.009855603226903218]. Moving to final pose.
+[INFO] [1750680267.205079, 1713.193000]: Moving arm to pose: position: 
+  x: 0.13264811510252497
+  y: -2.7879527952025266e-05
+  z: 0.05985560322690322
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680267.205666, 1713.194000]: Waiting for '/compute_ik' service...
+[INFO] [1750680267.207031, 1713.195000]: Service is available.
+[INFO] [1750680267.207840, 1713.196000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680267.208394, 1713.196000]: Sending IK request...
+[INFO] [1750680267.210288, 1713.198000]: IK Solution Found!
+[INFO] [1750680267.210968, 1713.199000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680267.211537, 1713.200000]: IK Solution (Joint Values): (-0.0002309734299632525, 0.15199914706024578, 1.1940855626703568, -5.397166491634094e-10, 1.7955079401760161, -0.00023096525254569586, 0.01898986478867086, 0.01898986478867086)
+[INFO] [1750680267.212328, 1713.200000]: Moving arm to: (-0.0002309734299632525, 0.15199914706024578, 1.1940855626703568, -5.397166491634094e-10, 1.7955079401760161, -0.00023096525254569586) in 8.0s.
+[INFO] [1750680267.212856, 1713.201000]: Arm command published. Waiting for completion...
+[INFO] [1750680275.215579, 1721.201000]: Arm movement finished.
+[INFO] [1750680283.219529, 1729.201000]: Attempting to move to TF frame 'red_cube' with offset [0.0, 0.0, 0.015].
+[INFO] [1750680283.220284, 1729.201000]: Target frame 'red_cube' found at [0.13264811510252497, -2.7879527952025266e-05, 0.009855603226903218]. Moving to final pose.
+[INFO] [1750680283.220896, 1729.202000]: Moving arm to pose: position: 
+  x: 0.13264811510252497
+  y: -2.7879527952025266e-05
+  z: 0.024855603226903215
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680283.221384, 1729.202000]: Waiting for '/compute_ik' service...
+[INFO] [1750680283.222558, 1729.204000]: Service is available.
+[INFO] [1750680283.223115, 1729.204000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680283.223604, 1729.205000]: Sending IK request...
+[INFO] [1750680283.225345, 1729.206000]: IK Solution Found!
+[INFO] [1750680283.225935, 1729.207000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680283.226434, 1729.207000]: IK Solution (Joint Values): (-0.0002311750901352998, 0.13621673900306902, 1.5496249724398523, 2.6374900772982843e-10, 1.455750942250476, -0.000231174957158345, 0.01899783222623807, 0.01899783222623807)
+[INFO] [1750680283.226961, 1729.208000]: Moving arm to: (-0.0002311750901352998, 0.13621673900306902, 1.5496249724398523, 2.6374900772982843e-10, 1.455750942250476, -0.000231174957158345) in 8.0s.
+[INFO] [1750680283.227536, 1729.209000]: Arm command published. Waiting for completion...
+[INFO] [1750680291.230807, 1737.209000]: Arm movement finished.
+[INFO] [1750680299.234637, 1745.209000]: Gripper command published. Waiting for completion...
+[INFO] [1750680307.237545, 1753.209000]: Gripper action finished.
+[INFO] [1750680307.238394, 1753.209000]: Attempting to move to TF frame 'red_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680307.239085, 1753.210000]: Target frame 'red_cube' found at [0.13380565798847832, -0.005540540075616001, 0.010017178429431842]. Moving to final pose.
+[INFO] [1750680307.239743, 1753.210000]: Moving arm to pose: position: 
+  x: 0.13380565798847832
+  y: -0.005540540075616001
+  z: 0.06001717842943184
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680307.240335, 1753.211000]: Waiting for '/compute_ik' service...
+[INFO] [1750680307.241765, 1753.213000]: Service is available.
+[INFO] [1750680307.242326, 1753.213000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680307.242989, 1753.214000]: Sending IK request...
+[INFO] [1750680307.244889, 1753.216000]: IK Solution Found!
+[INFO] [1750680307.245392, 1753.216000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680307.245959, 1753.217000]: IK Solution (Joint Values): (-0.045455402949869564, 0.16319415729325443, 1.1791640559747334, 1.4918459190851875e-11, 1.799234440325761, -0.045455402994405564, -0.009031748853321961, -0.009031748853321961)
+[INFO] [1750680307.246471, 1753.217000]: Moving arm to: (-0.045455402949869564, 0.16319415729325443, 1.1791640559747334, 1.4918459190851875e-11, 1.799234440325761, -0.045455402994405564) in 8.0s.
+[INFO] [1750680307.247006, 1753.218000]: Arm command published. Waiting for completion...
+[INFO] [1750680307.247463, 1753.218000]: Arm movement finished.
+[INFO] [1750680309.248484, 1755.219000]: Attaching robot:link7 to red_cube:link
+[INFO] [1750680309.250886, 1755.221000]: Attachment successful.
+[INFO] [1750680317.254501, 1763.222000]: Moving arm to home position.
+[INFO] [1750680317.255251, 1763.222000]: Moving arm to: [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194] in 8.0s.
+[INFO] [1750680317.255930, 1763.223000]: Arm command published. Waiting for completion...
+[INFO] [1750680325.258595, 1771.223000]: Arm movement finished.
+[INFO] [1750680325.259652, 1771.224000]: Moving red_cube to frame 'blue_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680325.260258, 1771.224000]: Releasing object 'blue_cube'...
+[INFO] [1750680325.260824, 1771.225000]: Attempting to move to TF frame 'blue_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680325.261293, 1771.225000]: Target frame 'blue_cube' found at [0.1416145623204613, 0.08849131914193163, 0.029723098766020955]. Moving to final pose.
+[INFO] [1750680325.261821, 1771.226000]: Moving arm to pose: position: 
+  x: 0.1416145623204613
+  y: 0.08849131914193163
+  z: 0.07972309876602096
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680325.262260, 1771.226000]: Waiting for '/compute_ik' service...
+[INFO] [1750680325.263421, 1771.227000]: Service is available.
+[INFO] [1750680325.264053, 1771.228000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680325.264624, 1771.229000]: Sending IK request...
+[ERROR] [1750680326.266711, 1772.231000]: IK Failed with error code: -31
+[WARN] [1750680326.267769, 1772.232000]: IK solution not found on attempt 1. Retrying with different orientation.
+[INFO] [1750680326.268343, 1772.232000]: Waiting for '/compute_ik' service...
+[INFO] [1750680326.269561, 1772.234000]: Service is available.
+[INFO] [1750680326.270072, 1772.234000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680326.270513, 1772.234000]: Sending IK request...
+[INFO] [1750680326.272193, 1772.236000]: IK Solution Found!
+[INFO] [1750680326.272876, 1772.237000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680326.273360, 1772.237000]: IK Solution (Joint Values): (0.6480995811275725, 0.4883999381167392, 0.5200157301384432, -0.05397034991485678, 2.069902978384508, 0.6207625795612725, -0.00905945490801927, -0.00905945490801927)
+[INFO] [1750680326.273886, 1772.238000]: Moving arm to: (0.6480995811275725, 0.4883999381167392, 0.5200157301384432, -0.05397034991485678, 2.069902978384508, 0.6207625795612725) in 8.0s.
+[INFO] [1750680326.274320, 1772.238000]: Arm command published. Waiting for completion...
+[INFO] [1750680334.278560, 1780.239000]: Arm movement finished.
+[INFO] [1750680342.281996, 1788.239000]: Detaching robot:link7 from red_cube:link
+[INFO] [1750680342.284423, 1788.241000]: Detachment successful.
+[INFO] [1750680342.285218, 1788.242000]: Gripper command published. Waiting for completion...
+[INFO] [1750680350.288291, 1796.242000]: Gripper action finished.
+[INFO] [1750680350.289064, 1796.242000]: Attempting to move to TF frame 'blue_cube' with offset [0.0, 0.0, 0.07].
+[INFO] [1750680350.289778, 1796.243000]: Target frame 'blue_cube' found at [0.14152479343651625, 0.08843882671986132, 0.029607273397571438]. Moving to final pose.
+[INFO] [1750680350.290340, 1796.244000]: Moving arm to pose: position: 
+  x: 0.14152479343651625
+  y: 0.08843882671986132
+  z: 0.09960727339757144
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0 in 8.0s.
+[INFO] [1750680350.290879, 1796.244000]: Waiting for '/compute_ik' service...
+[INFO] [1750680350.292053, 1796.245000]: Service is available.
+[INFO] [1750680350.292702, 1796.246000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680350.293172, 1796.246000]: Sending IK request...
+[ERROR] [1750680351.295026, 1797.248000]: IK Failed with error code: -31
+[WARN] [1750680351.296110, 1797.249000]: IK solution not found on attempt 1. Retrying with different orientation.
+[INFO] [1750680351.296903, 1797.250000]: Waiting for '/compute_ik' service...
+[INFO] [1750680351.298209, 1797.251000]: Service is available.
+[INFO] [1750680351.298870, 1797.252000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680351.299337, 1797.252000]: Sending IK request...
+[ERROR] [1750680352.301196, 1798.254000]: IK Failed with error code: -31
+[WARN] [1750680352.302027, 1798.255000]: IK solution not found on attempt 2. Retrying with different orientation.
+[INFO] [1750680352.302723, 1798.256000]: Waiting for '/compute_ik' service...
+[INFO] [1750680352.304231, 1798.257000]: Service is available.
+[INFO] [1750680352.304992, 1798.258000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680352.305552, 1798.259000]: Sending IK request...
+[ERROR] [1750680353.307512, 1799.259000]: IK Failed with error code: -31
+[WARN] [1750680353.308709, 1799.261000]: IK solution not found on attempt 3. Retrying with different orientation.
+[INFO] [1750680353.309393, 1799.261000]: Waiting for '/compute_ik' service...
+[INFO] [1750680353.310932, 1799.263000]: Service is available.
+[INFO] [1750680353.312058, 1799.264000]: Attempting to match orientation (rotation_lock=True).
+[INFO] [1750680353.312913, 1799.265000]: Sending IK request...
+[INFO] [1750680353.323753, 1799.276000]: IK Solution Found!
+[INFO] [1750680353.324586, 1799.277000]: IK Solution (Joint Names): ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper', 'gripper_sub']
+[INFO] [1750680353.325186, 1799.277000]: IK Solution (Joint Values): (0.7678966625346791, 0.38354926589191396, 0.502091217773653, -0.18653709226512358, 2.077473461919608, 0.6625727877318319, 0.018981203201335686, 0.018981203201335686)
+[INFO] [1750680353.325756, 1799.278000]: Moving arm to: (0.7678966625346791, 0.38354926589191396, 0.502091217773653, -0.18653709226512358, 2.077473461919608, 0.6625727877318319) in 8.0s.
+[INFO] [1750680353.326226, 1799.278000]: Arm command published. Waiting for completion...
+[INFO] [1750680361.330259, 1807.279000]: Arm movement finished.
+[INFO] [1750680369.333551, 1815.279000]: Object 'blue_cube' released successfully.
+[INFO] [1750680369.334389, 1815.279000]: Moving arm to home position.
+[INFO] [1750680369.335070, 1815.280000]: Moving arm to: [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194] in 8.0s.
+[INFO] [1750680369.335738, 1815.281000]: Arm command published. Waiting for completion...
+[INFO] [1750680377.339331, 1823.281000]: Arm movement finished.
+[INFO] [1750680377.340188, 1823.281000]: Successfully moved red_cube to frame 'blue_cube' with offset [0.0, 0.0, 0.05].
+[INFO] [1750680377.340799, 1823.282000]: Move execution complete. Waiting a moment for state to settle...
+[INFO] [1750680380.342592, 1826.283000]: Fetching the latest game state from /hanoi/game_state...
+[INFO] [1750680380.445590, 1826.385000]: Received game state: {"A": [], "B": [], "C": [3, 2, 1]}
+[INFO] [1750680380.446229, 1826.386000]: PUZZLE SOLVED! All disks are on Peg C.
+[INFO] [1750680380.446931, 1826.387000]: Hanoi Main Controller loop has finished.
+[INFO] [1750680380.447459, 1826.387000]: Moving arm to home position.
+[INFO] [1750680380.448017, 1826.388000]: Moving arm to: [-0.03834952, -0.84062147, 1.26093221, 0.00613592, 1.97576725, -0.00460194] in 5.0s.
+[INFO] [1750680380.448572, 1826.389000]: Arm command published. Waiting for completion...
+[INFO] [1750680385.450568, 1831.389000]: Arm movement finished.
+root@Joshi:~/catkin_ws/src/om_position_controller/scripts# 

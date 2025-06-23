@@ -1,188 +1,179 @@
-import numpy as np
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout
-from tensorflow.keras.optimizers import Adam
+#!/usr/bin/env python3
+
+# Standard Library Imports
 import json
 
-# --- 1. Data Generation ---
+# ROS-related Imports
+import rospy
+from std_msgs.msg import String, Char
 
-def hanoi_solver(total_disks, n, source, target, auxiliary):
+# --- Constants and Configuration ---
+
+# The number of disks in the puzzle.
+N_DISKS = 3
+
+# Defines the names of the pegs. This order is used for reference.
+PEGS = ['A', 'B', 'C']
+
+
+class HanoiStateBasedSolverNode:
     """
-    Recursive generator to solve the Tower of Hanoi puzzle.
-    Yields tuples of (current_state, optimal_move).
-    'total_disks' is the total number of disks in the puzzle.
-    'n' is the number of disks to move in the current recursive step.
+    A ROS node that uses a classic recursive algorithm to determine the next
+    optimal move in the Tower of Hanoi puzzle based on the current game state.
     """
-    if n > 0:
-        # Move n-1 disks from source to auxiliary, so they are out of the way
-        yield from hanoi_solver(total_disks, n - 1, source, auxiliary, target)
+    def __init__(self):
+        """Initializes the ROS node, subscribers, and publishers."""
+        rospy.init_node('hanoi_state_based_solver_node', anonymous=True)
 
-        # Move the nth disk from source to target
-        # This is the core move at this step of the recursion
-        state = get_current_state(total_disks, source, target, auxiliary)
-        move = (source, target)
-        yield (state, move)
+        # This variable will store the most recent game state received.
+        self.last_game_state_json = None
 
-        # Update the state of the pegs after the move
-        disk = pegs[source].pop()
-        pegs[target].append(disk)
+        # Subscriber to continuously update the game state from the environment.
+        rospy.Subscriber('/hanoi/game_state', String, self.game_state_callback)
+        
+        # Subscriber that acts as a signal to trigger the move calculation.
+        rospy.Subscriber('/hanoi/ask_llm', String, self.trigger_move_callback)
+        
+        # Publisher to send the calculated move command.
+        self.move_publisher = rospy.Publisher('/hanoi/move', String, queue_size=10)
+        
+        # Publisher to signal that the game should be reset (e.g., due to an invalid state).
+        self.reset_publisher = rospy.Publisher('/hanoi_reset', Char, queue_size=10)
+        
+        rospy.loginfo("State-Based Hanoi Solver Node initialized.")
+        rospy.loginfo(f"Solving for {N_DISKS} disks based on current state.")
+        rospy.loginfo("Subscribing to /hanoi/game_state for state updates.")
+        rospy.loginfo("Subscribing to /hanoi/ask_llm to trigger moves.")
+        rospy.loginfo("Publishing moves to /hanoi/move.")
 
-        # Move the n-1 disks that we left on auxiliary onto target
-        yield from hanoi_solver(total_disks, n - 1, auxiliary, target, source)
+    def game_state_callback(self, msg):
+        """
+        Stores the latest state of the game upon receiving it.
 
-def get_current_state(n_disks, source_peg, target_peg, aux_peg):
-    """
-    Represents the current state of the pegs as a flat list.
-    This will be the input for our neural network.
-    Each disk is represented by its size (1 to n_disks).
-    Each peg's state is padded to n_disks with 0s.
-    """
-    state = []
-    # We use a fixed order of pegs ('A', 'B', 'C') for consistent state representation
-    for peg_name in ['A', 'B', 'C']:
-        peg_state = pegs[peg_name][:] # Make a copy
-        # Pad the list with 0s to have a fixed size input
-        padded_peg = peg_state + [0] * (n_disks - len(peg_state))
-        state.extend(padded_peg)
-    return state
+        Args:
+            msg (std_msgs.msg.String): The message containing the game state as a JSON string.
+        """
+        rospy.loginfo("Received new game state from /hanoi/game_state.")
+        self.last_game_state_json = msg.data
 
-def generate_hanoi_data(n_disks):
-    """
-    Generates a complete dataset of states and optimal moves.
-    """
-    global pegs
-    pegs = {
-        'A': list(range(n_disks, 0, -1)),
-        'B': [],
-        'C': []
-    }
-    
-    # All possible moves in the Tower of Hanoi with 3 pegs
-    # (Source Peg, Destination Peg)
-    possible_moves = [('A', 'B'), ('A', 'C'), ('B', 'A'), ('B', 'C'), ('C', 'A'), ('C', 'B')]
-    move_to_index = {move: i for i, move in enumerate(possible_moves)}
-    
-    states = []
-    labels = []
+    def trigger_move_callback(self, msg):
+        """
+        Triggered by a message, this function analyzes the current game state,
+        calculates the single best next move, and publishes it.
 
-    # The hanoi_solver yields the state *before* the move.
-    # We pass n_disks twice: once for the total count, once for the current recursion level.
-    for state_before_move, move in hanoi_solver(n_disks, n_disks, 'A', 'C', 'B'):
-        states.append(state_before_move)
-        labels.append(move_to_index[move])
+        Args:
+            msg (std_msgs.msg.String): The trigger message (content is not used).
+        """
+        rospy.loginfo("--- Received Signal to Calculate Next Move ---")
+        
+        if self.last_game_state_json is None:
+            rospy.logwarn("Trigger received, but no game state has been received yet. Ignoring.")
+            return
 
-    return np.array(states), np.array(labels), possible_moves
+        try:
+            state_dict = json.loads(self.last_game_state_json)
+        except json.JSONDecodeError:
+            rospy.logerr(f"Failed to decode the last stored JSON state: {self.last_game_state_json}")
+            return
 
-# --- Configuration ---
-N_DISKS = 4 # Number of disks. Keep this small (3 or 4) to start.
-# For N_DISKS = 3, we have 2^3 - 1 = 7 moves.
-# For N_DISKS = 4, we have 2^4 - 1 = 15 moves.
-# The number of states grows exponentially.
+        # --- 1. State Validation and Puzzle Completion Check ---
+        is_valid, error_message = self.validate_state(state_dict)
+        if not is_valid:
+            rospy.logwarn(f"Invalid State Detected: {error_message}")
+            rospy.loginfo("Publishing to /hanoi_reset due to invalid state.")
+            self.reset_publisher.publish(Char(data=ord('1')))
+            return
 
-print(f"Generating training data for {N_DISKS} disks...")
-X_train, y_train, moves_list = generate_hanoi_data(N_DISKS)
-print(f"Generated {len(X_train)} training samples.")
+        if len(state_dict.get('C', [])) == N_DISKS:
+            rospy.loginfo(f"Puzzle Solved! All {N_DISKS} disks are on Peg C.")
+            return
 
-# One-hot encode the labels
-y_train_one_hot = tf.keras.utils.to_categorical(y_train, num_classes=6)
+        # --- 2. Calculate Move using Recursive Algorithm ---
+        rospy.loginfo("Calculating best move using recursive algorithm...")
+        # The main goal is always to move N_DISKS from 'A' (source) to 'C' (destination).
+        move = self.calculate_next_move(N_DISKS, 'A', 'C', 'B', state_dict)
 
-# --- 2. Neural Network Model ---
+        if move is None:
+            rospy.logwarn("Move calculation resulted in no action. The puzzle may be in an unrecoverable or solved state.")
+            return
+        
+        source_peg, dest_peg = move
+        rospy.loginfo(f"State-based calculation: Best move is from {source_peg} to {dest_peg}")
+        
+        # --- 3. Publish Move ---
+        move_command = {"source_peg": source_peg, "destination_peg": dest_peg}
+        move_json_string = json.dumps(move_command)
 
-print("Building the Neural Network model...")
+        rospy.sleep(0.1)  # Small delay to ensure the message is processed correctly
+        self.move_publisher.publish(move_json_string)
+        rospy.loginfo(f"Published move to /hanoi/move: {move_json_string}")
+        rospy.loginfo("-------------------------------------------")
 
-# The input shape is 3 pegs * N_DISKS positions per peg
-input_shape = (N_DISKS * 3,) 
-output_shape = 6 # 6 possible moves
+    def calculate_next_move(self, h, source, dest, aux, state):
+        """
+        Recursively determines the single best move to make, based on the goal of
+        moving a tower of height 'h' from a source to a destination peg.
 
-model = Sequential([
-    Dense(128, activation='relu', input_shape=input_shape, name='input_layer'),
-    Dropout(0.2),
-    Dense(128, activation='relu', name='hidden_layer_1'),
-    Dropout(0.2),
-    Dense(64, activation='relu', name='hidden_layer_2'),
-    Dense(output_shape, activation='softmax', name='output_layer') # Softmax for multi-class classification
-])
+        Args:
+            h (int): The height of the tower for the current sub-problem.
+            source (str): The conceptual source peg for this sub-problem.
+            dest (str): The conceptual destination peg for this sub-problem.
+            aux (str): The conceptual auxiliary peg for this sub-problem.
+            state (dict): The current state of all disks on all pegs.
 
-# Compile the model
-model.compile(
-    optimizer=Adam(learning_rate=0.001),
-    loss='categorical_crossentropy', # Good for one-hot encoded labels
-    metrics=['accuracy']
-)
+        Returns:
+            tuple or None: A (source_peg, destination_peg) tuple for the move, or None if
+                           the sub-problem is already solved.
+        """
+        if h <= 0:
+            return None
 
-model.summary()
+        # Find the actual current location of the largest disk in this sub-problem.
+        peg_of_h = [peg for peg, disks in state.items() if h in disks][0]
+        
+        # If the largest disk 'h' is not on its conceptual source peg, it means we
+        # are in the "second half" of the solution: moving the h-1 tower from the
+        # auxiliary peg to the destination peg.
+        if peg_of_h != source:
+            return self.calculate_next_move(h - 1, aux, dest, source, state)
+        # If disk 'h' is on the source peg, we check if the h-1 tower is ready.
+        else:
+            # Check if all smaller disks (the h-1 tower) are on the auxiliary peg.
+            is_h_minus_1_tower_ready = all(disk in state.get(aux, []) for disk in range(1, h))
+            
+            # If the smaller tower is ready, the correct move is to move disk 'h'.
+            if is_h_minus_1_tower_ready:
+                return (source, dest)
+            # Otherwise, we must continue working on moving the h-1 tower to the aux peg.
+            else:
+                return self.calculate_next_move(h - 1, source, aux, dest, state)
 
-# --- 3. Training ---
+    def validate_state(self, state_dict):
+        """
+        Checks if the current state is valid according to Hanoi rules.
+        A larger disk cannot be on top of a smaller disk.
 
-print("\nTraining the model...")
-history = model.fit(
-    X_train,
-    y_train_one_hot,
-    epochs=1000,
-    batch_size=4096,
-    validation_split=0.2, # Use part of the data for validation
-    verbose=1
-)
-
-# --- 4. Evaluation and Prediction ---
-
-print("\nTraining finished. Evaluating model performance.")
-
-loss, accuracy = model.evaluate(X_train, y_train_one_hot, verbose=0)
-print(f"\nFinal Training Accuracy: {accuracy * 100:.2f}%")
-print(f"Final Training Loss: {loss:.4f}")
-
-# --- Let's test it on the initial state ---
-print("\n--- Testing the model on the initial state ---")
-
-# Recreate the initial state for N_DISKS
-initial_peg_state = {
-    'A': list(range(N_DISKS, 0, -1)),
-    'B': [],
-    'C': []
-}
-initial_state_vector = []
-for peg_name in ['A', 'B', 'C']:
-    peg_state = initial_peg_state[peg_name][:]
-    padded_peg = peg_state + [0] * (N_DISKS - len(peg_state))
-    initial_state_vector.extend(padded_peg)
-
-initial_state_vector = np.array([initial_state_vector]) # Model expects a batch
-
-# Predict the move
-prediction = model.predict(initial_state_vector)
-predicted_move_index = np.argmax(prediction)
-predicted_move = moves_list[predicted_move_index]
-
-print(f"Initial State Vector: {initial_state_vector.flatten()}")
-print(f"Model's Predicted Probabilities: {prediction.flatten()}")
-print(f"The model predicts the best initial move is: Move from {predicted_move[0]} to {predicted_move[1]}")
-print(f"Correct initial move for {N_DISKS} disks is from A to C.")
+        Args:
+            state_dict (dict): The state, e.g., {'A': [3, 2, 1], 'B': [], 'C': []}
+                               The lists must represent disks from bottom to top.
+        Returns:
+            (bool, str): A tuple of (is_valid, error_message).
+        """
+        for peg, disks in state_dict.items():
+            for i in range(len(disks) - 1):
+                # If a disk at a lower position (e.g., index 0) is smaller than
+                # the disk above it (e.g., index 1), the state is invalid.
+                if disks[i] < disks[i+1]:
+                    error = f"Invalid state on Peg {peg}: disk {disks[i+1]} cannot be on disk {disks[i]}."
+                    return False, error
+        return True, ""
 
 
-initial_peg_state = {
-    'A': [2,3],
-    'B': [1,3],
-    'C': [3]
-}
-initial_state_vector = []
-for peg_name in ['A', 'B', 'C']:
-    peg_state = initial_peg_state[peg_name][:]
-    padded_peg = peg_state + [0] * (N_DISKS - len(peg_state))
-    initial_state_vector.extend(padded_peg)
-
-initial_state_vector = np.array([initial_state_vector]) # Model expects a batch
-
-# Predict the move
-prediction = model.predict(initial_state_vector)
-predicted_move_index = np.argmax(prediction)
-predicted_move = moves_list[predicted_move_index]
-
-print(f"Initial State Vector: {initial_state_vector.flatten()}")
-print(f"Model's Predicted Probabilities: {prediction.flatten()}")
-print(f"The model predicts the best initial move is: Move from {predicted_move[0]} to {predicted_move[1]}")
-print(f"Correct initial move for {N_DISKS} disks is from A to C.")
-
-# You can save the model for later use
-model.save('tower_of_hanoi_solver.h5')
+if __name__ == '__main__':
+    try:
+        HanoiStateBasedSolverNode()
+        rospy.spin()  # Keeps the node alive until shutdown.
+    except rospy.ROSInterruptException:
+        pass
+    except Exception as e:
+        rospy.logfatal(f"An unhandled exception occurred: {e}")
