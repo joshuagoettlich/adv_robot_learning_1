@@ -30,3 +30,10 @@ Solving the puzzle:
   <source src="https://raw.githubusercontent.com/joshuagoettlich/adv_robot_learning_1/gasping/ARL_25_noetic_packages/another_solve_fast.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
+
+<video width="640" height="360" controls>
+  <source src="[https://raw.githubusercontent.com/joshuagoettlich/adv_robot_learning_1/gasping/ARL_25_noetic_packages/another_solve_fast.mp4](https://github.com/joshuagoettlich/adv_robot_learning_1/blob/gasping/ARL_25_noetic_packages/spawn_hanoi_2.mp4)" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+
