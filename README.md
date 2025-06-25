@@ -23,5 +23,10 @@ Final_Hand in Launch:
     roscd om_position_controller/scripts && \
     python3 game_player.py 
     
+Solving the puzzle:
 
 
+<video width="640" height="360" controls>
+  <source src="https://raw.githubusercontent.com/joshuagoettlich/adv_robot_learning_1/gasping/ARL_25_noetic_packages/another_solve_fast.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
