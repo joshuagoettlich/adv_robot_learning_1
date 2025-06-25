@@ -24,6 +24,7 @@ Final_Hand in Launch:
     python3 game_player.py 
     
 Solving the puzzle:
+![solve](ARL_25_noetic_packages/another_solve_fast.mp4)
 
 
 <video width="640" height="360" controls>
