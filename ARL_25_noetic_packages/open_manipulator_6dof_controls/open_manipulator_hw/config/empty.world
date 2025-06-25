@@ -53,12 +53,16 @@
       </link>
     </model>
 
+    <physics type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_update_rate>4000.0</real_time_update_rate>
+    </physics>
+
     <gui>
       <camera name="user_camera">
         <pose>1.9878 0.042571 0.416464 0 0.116 -3.12159</pose>
       </camera>
     </gui>
-
 
   </world>
 </sdf>

@@ -314,7 +314,7 @@ class GazeboController:
             wait=False,
             rotation_lock=True  
         )
-        rospy.sleep(2.0)  # Wait for the gripper to close before attaching
+        rospy.sleep(execution_time/4)  # Wait for the gripper to close before attaching
         # Attach the gripper link to the object link
         self.link_attacher.attach(
             model_name_1='robot',
